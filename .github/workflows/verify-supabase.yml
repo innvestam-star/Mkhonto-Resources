@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SUPABASE_URL: https://zjrzzvakwrwkrcqhcnyo.supabase.co
-      SUPABASE_PUBLISHABLE_KEY: sb_publishable_TjnmBfMTeCAehy9uhz7HbQ_u7FXfAPN
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpqcnp6dmFrd3J3a3JjcWhjbnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3ODI4NzEsImV4cCI6MjEwMTM1ODg3MX0.Nn3mKviiJL9C6jg1n9ZvImzbx4LjJeX5MFCfCncNHCc
 
     steps:
       - name: Check out repository
@@ -24,8 +24,9 @@ jobs:
         shell: bash
         run: |
           curl --fail --silent --show-error \
-            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
-            "$SUPABASE_URL/rest/v1/" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/profiles?select=id&limit=0" \
             > /dev/null
 
       - name: Verify Supabase Auth service
