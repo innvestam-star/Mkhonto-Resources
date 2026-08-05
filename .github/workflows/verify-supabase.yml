@@ -1,0 +1,44 @@
+name: Verify Supabase connection
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: https://zjrzzvakwrwkrcqhcnyo.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_TjnmBfMTeCAehy9uhz7HbQ_u7FXfAPN
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify Supabase REST API
+        shell: bash
+        run: |
+          curl --fail --silent --show-error \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            "$SUPABASE_URL/rest/v1/" \
+            > /dev/null
+
+      - name: Verify Supabase Auth service
+        shell: bash
+        run: |
+          curl --fail --silent --show-error \
+            "$SUPABASE_URL/auth/v1/health" \
+            > /dev/null
+
+      - name: Verify Google Search Console file
+        shell: bash
+        run: |
+          test -f google0f5aff3a23595204.html
+          grep -Fxq \
+            "google-site-verification: google0f5aff3a23595204.html" \
+            google0f5aff3a23595204.html
