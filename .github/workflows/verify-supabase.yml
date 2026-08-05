@@ -33,6 +33,8 @@ jobs:
         shell: bash
         run: |
           curl --fail --silent --show-error \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
             "$SUPABASE_URL/auth/v1/health" \
             > /dev/null
 
