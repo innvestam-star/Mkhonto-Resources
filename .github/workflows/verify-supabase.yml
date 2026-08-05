@@ -39,7 +39,7 @@ jobs:
       - name: Verify Google Search Console file
         shell: bash
         run: |
-          test -f google0f5aff3a23595204.html
+          test -f public/google0f5aff3a23595204.html
           grep -Fxq \
             "google-site-verification: google0f5aff3a23595204.html" \
-            google0f5aff3a23595204.html
+            public/google0f5aff3a23595204.html
