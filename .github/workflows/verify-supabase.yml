@@ -1,4 +1,4 @@
-name: Verify Supabase connection
+name: Verify Supabase and SEO files
 
 on:
   push:
@@ -36,10 +36,45 @@ jobs:
             "$SUPABASE_URL/auth/v1/health" \
             > /dev/null
 
-      - name: Verify Google Search Console file
+      - name: Verify Search Console and sitemap files
         shell: bash
         run: |
-          test -f public/google0f5aff3a23595204.html
-          grep -Fxq \
-            "google-site-verification: google0f5aff3a23595204.html" \
-            public/google0f5aff3a23595204.html
+          python - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          verification = Path("public/google0f5aff3a23595204.html")
+          assert verification.read_text(encoding="utf-8").strip() == (
+              "google-site-verification: google0f5aff3a23595204.html"
+          )
+
+          required_files = [
+              "public/sitemap.xml",
+              "public/sitemap_4780415.xml",
+              "public/sitemap.html",
+              "public/sitemap_4780415.html",
+              "public/urllist.txt",
+              "public/robots.txt",
+          ]
+          for file_name in required_files:
+              assert Path(file_name).is_file(), f"Missing {file_name}"
+
+          root = ET.parse("public/sitemap.xml").getroot()
+          namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+          sitemap_urls = [
+              element.text.strip()
+              for element in root.findall("sm:url/sm:loc", namespace)
+              if element.text
+          ]
+          listed_urls = [
+              line.strip()
+              for line in Path("public/urllist.txt").read_text(encoding="utf-8").splitlines()
+              if line.strip()
+          ]
+
+          assert len(sitemap_urls) == 11, "Expected 11 sitemap URLs"
+          assert sitemap_urls == listed_urls, "Sitemap and URL list do not match"
+
+          robots = Path("public/robots.txt").read_text(encoding="utf-8")
+          assert "Sitemap: https://mkhontoresources.com/sitemap.xml" in robots
+          PY
