@@ -4,6 +4,8 @@ This register is the working source of truth for the Mkhonto Resources Commodity
 
 Status vocabulary: **LIVE**, **PARTIALLY IMPLEMENTED**, **MOCKED**, **INTEGRATION-READY**, **NOT IMPLEMENTED**, **DISABLED**, **AWAITING CONFIGURATION**, **AWAITING CREDENTIALS**, **BLOCKED**.
 
+> Stage 9 source-control checkpoint: hosted migrations `20260821042643`, `20260821042835`, and `20260821043244` are byte-identical to the corresponding GitHub SQL files. Formal Stage 9 sign-off is documented in `docs/mrcip/STAGE_9_IMPLEMENTATION_AUDIT.md`.
+
 | Requirement | Status | Implementation Location | Database Impact | Integration | Tests | Issues | Remediation | Sign-off |
 |---|---|---|---|---|---|---|---|---|
 | Supabase project connectivity | LIVE | Hosted Supabase `zjrzzvakwrwkrcqhcnyo` | None | Core platform | Project health, schema read, SQL and type generation passed | Previous stale/password tooling failure resolved | No further migration blocker | **SIGNED OFF** |
