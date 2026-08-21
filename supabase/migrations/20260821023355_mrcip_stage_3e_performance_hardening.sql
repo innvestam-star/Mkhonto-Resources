@@ -1,0 +1,2 @@
+create index if not exists buyer_requirements_org_product_idx on public.buyer_requirements (organisation_id, product_id) where product_id is not null;
+create index if not exists seller_supply_offers_org_product_idx on public.seller_supply_offers (organisation_id, product_id) where product_id is not null;
