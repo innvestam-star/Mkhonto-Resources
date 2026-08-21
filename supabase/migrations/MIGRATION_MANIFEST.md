@@ -52,39 +52,41 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 | `20260821032908` | `mrcip_stage_6c_internal_guard_context_hardening` | Applied and committed |
 | `20260821032955` | `mrcip_stage_6d_closeout_guard_alias_hardening` | Applied and committed |
 | `20260821033201` | `mrcip_stage_6e_performance_hardening` | Applied and committed |
+| `20260821034553` | `mrcip_stage_7a_sampling_inspection_lab_foundation` | Applied and committed |
+| `20260821034833` | `mrcip_stage_7b_traceability_workflow_and_security` | Applied and committed |
+| `20260821035207` | `mrcip_stage_7c_deal_room_document_role_compatibility` | Applied and committed |
+| `20260821035501` | `mrcip_stage_7d_performance_and_audit_policy_hardening` | Applied and committed |
 
 ## Verification performed
 
 - Hosted project status: healthy.
 - Full public-schema inspection and migration-history queries: successful.
-- Exact hosted migration versions are mirrored to GitHub through Stage 6.
-- TypeScript database type generation succeeded after Stage 6 and includes the four settlement tables plus all six controlled settlement RPCs.
-- Stages 1–5 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
+- Exact hosted migration versions are mirrored to GitHub through Stage 7.
+- TypeScript database type generation succeeded after Stage 7 and includes the eight Stage 7 traceability tables and all six controlled Stage 7 workflow RPCs.
+- Stages 1–6 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
 - Stage 4 continues to enforce **PROTECT → VERIFY → DISCLOSE → CONTRACT** and reference-only Finance/Freight/Negotiation integration.
 - Stage 5 continues to enforce revisioned facilitator-chain control, exact 100% commission allocation, fee-protection linkage and verified trigger crystallisation before settlement.
-- Stage 6 adds a commission-specific settlement subledger rather than replacing or redefining the existing Finance/Payments models.
-- Stage 6 settlement cycles support all three approved commission bases: `percent_of_transaction`, `per_metric_tonne`, and `fixed_amount`.
-- Per-metric-tonne regression: **R10/MT × 1,000 MT = R10,000**, allocated **R6,000/R4,000** on a 60/40 split.
-- Percentage regression: **2.5% × R200,000 = R5,000**.
-- Fixed-amount regression: **R5,000**, with duplicate active fixed-fee settlement cycles blocked.
-- Main Stage 6 recurring settlement regression passed **9/9 controls**: pool arithmetic, partial reconciliation, overpayment blocking, derived-field immutability, full recurring-cycle settlement, direct paid-bypass blocking, controlled closeout, payout reversal/reopen, and replacement-payout restoration.
-- Fixed schedules become `paid` automatically only after their single settlement cycle is fully verified/settled.
-- Recurring R/MT and percentage schedules remain `partially_paid` after fully settled cycles until an explicit final closeout confirms all obligations are complete.
-- Verified payout reversals recalculate facilitator, batch and schedule balances; replacement payouts can then restore the settled/paid state.
-- Settlement approval and verified payout transitions require controlled source/evidence references; overpayment above a facilitator settlement-item balance is blocked.
-- Stage 6 tests exposed an internal reconciliation guard-context leak; `20260821032908_mrcip_stage_6c_internal_guard_context_hardening` now saves/restores internal guard state on success and exception.
-- Stage 6 tests also exposed a closeout PL/pgSQL alias collision; `20260821032955_mrcip_stage_6d_closeout_guard_alias_hardening` remediated it before final regression sign-off.
-- RLS is enabled on all four Stage 6 public tables: `commission_settlement_batches`, `commission_settlement_items`, `commission_settlement_entries`, and `commission_schedule_closeouts`.
-- `anon` has no Stage 6 table privileges. Authenticated table access is explicit and RLS-controlled; settlement economics remain limited to executive, Finance and Legal/Compliance roles.
-- Public Stage 6 settlement RPCs are invoker-mode; private reconciliation helpers are non-executable by `anon` and `authenticated`.
-- Settlement-item DELETE access was intentionally removed so derived facilitator obligations cannot be erased through the Data API.
-- Stage 6 retains tenant-safe composite relationships to commission schedules/allocations, facilitator members, Finance documents, Payments and evidence Documents.
-- Existing quotation, invoice, VAT, Finance line-item, Payment and Freight calculation logic was not changed. Finance/Payment records are optional settlement evidence/reference only.
-- Final Stage 6 fixture residue checks returned zero test counterparties, settlement batches, settlement items, settlement entries and closeouts. No production settlement data was created by regression tests.
-- Security advisor rerun: no new Stage 6-specific security findings. Remaining warnings are the same pre-existing authenticated-callable Auth `SECURITY DEFINER` functions and disabled leaked-password protection.
-- Performance advisor initially identified one Stage 6 missing covering index for the optional Payment FK. `20260821033201_mrcip_stage_6e_performance_hardening` remediated it; rerun no longer reports the Stage 6 FK warning.
-- Remaining performance notices are expected unused-index messages on empty/new tables plus the pre-existing duplicate organisation-membership index.
-- Formal Stage 6 implementation audit is stored at `docs/mrcip/STAGE_6_IMPLEMENTATION_AUDIT.md`.
+- Stage 6 continues to enforce a commission-specific settlement subledger, all three approved commission bases, overpayment protection, reversals and controlled recurring closeout without redefining existing Finance/Payments semantics.
+- Stage 7 adds `commodity_sampling_requests`, `commodity_samples`, `sample_custody_events`, `laboratory_test_orders`, `laboratory_test_results`, `laboratory_certificates`, `commodity_inspections`, and `lab_result_publications`.
+- Stage 7 reuses existing `laboratories`, `commodity_spec_fields`, `seller_offer_specs`, protected `documents`, `opportunity_document_links` and `audit_events`; no duplicate specification engine or document store was introduced.
+- Sampling requests preserve opportunity/seller-offer/commodity/product/mine context and inherit protected handling from protected seller offers.
+- Chain-of-custody events are append-only; sample identity/collection fields become immutable after custody begins; protected custody evidence must use `mrcip_protected` Documents.
+- Laboratory receipt requires a custody `received` event. Direct test-order verification is blocked.
+- Reported/verified laboratory-result values cannot be silently rewritten; corrections use controlled revision lineage and a verified correction supersedes the previous verified revision.
+- Certificates must reference an `mrcip_protected` Document, match the test-order laboratory, retain a checksum snapshot, and be human-verified before supporting publication.
+- Verified laboratory certificates link into the protected Deal Room using the existing Stage 4 `assay` role; verified inspection reports reuse the existing `inspection` role.
+- Verified laboratory results can publish to the existing seller-offer specification only when result/certificate/order/offer context agrees. Silent replacement of an existing different specification is blocked; explicit replacement records the previous value in the append-only publication ledger.
+- Cross-offer laboratory-result publication is blocked.
+- Stage 7 authenticated end-to-end regression passed **14/14 controls**, including protected request inheritance, custody-state derivation, sample immutability, direct-order-verification blocking, protected-certificate enforcement, Deal Room COA linkage, result/order verification, 5850 kcal/kg publication, verified-result immutability, controlled correction to 5900 kcal/kg, explicit replacement enforcement, cross-offer isolation, inspection evidence linkage and custody-ledger append-only protection.
+- Stage 7 testing exposed a Stage 4 Deal Room document-role compatibility issue. `20260821035207_mrcip_stage_7c_deal_room_document_role_compatibility` remediated it by reusing existing `assay` and `inspection` roles rather than widening the controlled vocabulary.
+- Stage 7 hardened legacy `audit_events` table grants to authenticated `SELECT,INSERT` only and no `anon` table privileges. Stage 7d consolidates overlapping SELECT policies while preserving existing management and MRCIP-authorised reads.
+- RLS is enabled on all eight Stage 7 tables. `anon` has no Stage 7 table privileges. Public Stage 7 workflow RPCs are invoker-mode and not anonymously executable; private trigger helpers are non-executable by `anon` and `authenticated`.
+- Stage 7 test cleanup left zero fixture counterparties, sampling requests, samples, test orders, results, certificates, inspections, protected fixture Documents and publication-ledger rows.
+- Security advisor rerun: no new Stage 7-specific security findings. Remaining warnings are the same pre-existing authenticated-callable Auth `SECURITY DEFINER` functions and disabled leaked-password protection.
+- Performance advisor identified a sampling-request product-FK covering index and overlapping `audit_events` SELECT policies during Stage 7. `20260821035501_mrcip_stage_7d_performance_and_audit_policy_hardening` remediated both; rerun no longer reports those Stage 7 findings.
+- Remaining performance notices are expected unused-index messages on new/empty tables plus the pre-existing duplicate organisation-membership index.
+- Existing quotation, invoice, VAT, Finance line-item, Payment, Stage 6 commission-settlement, Freight and Negotiation calculation logic was not changed.
+- Formal Stage 7 implementation audit is stored at `docs/mrcip/STAGE_7_IMPLEMENTATION_AUDIT.md`.
 
 ## Ongoing rules
 
@@ -104,3 +106,8 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 14. Commission schedules must not be marked paid outside the Stage 6 settlement/reconciliation controls.
 15. Verified settlement entries are evidence-bearing commercial records; they may be reversed only through the controlled reversal workflow with a reason and must never be silently deleted or rewritten.
 16. Recurring R/MT and percentage schedules require explicit closeout after all settlement cycles are settled; fixed schedules auto-close only after full verified settlement.
+17. Chain-of-custody events are append-only commercial evidence and must never be silently edited or deleted.
+18. Reported or verified laboratory-result values must not be rewritten in place; corrections must use controlled result revisions with predecessor/supersession lineage.
+19. Protected sampling, laboratory-certificate and inspection evidence must remain in the protected document path/classification and follow Deal Room sharing controls.
+20. Seller-offer specifications may be populated from laboratory evidence only through a verified result plus verified certificate with matching order/offer context; a different existing value requires explicit replacement approval and publication-history capture.
+21. Verified laboratory/inspection/publication evidence is auditable history and must not be silently deleted for operational convenience.
