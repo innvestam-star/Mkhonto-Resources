@@ -71,41 +71,48 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 | `20260821052234` | `mrcip_stage_11b_governed_ai_workflow_engine` | Applied and committed |
 | `20260821052322` | `mrcip_stage_11c_ai_review_rls_and_read_models` | Applied and committed |
 | `20260821052512` | `mrcip_stage_11d_performance_hardening` | Applied and committed |
+| `20260821054219` | `mrcip_stage_12a_prompt_execution_gateway_foundation` | Applied and committed |
+| `20260821054510` | `mrcip_stage_12b_prompt_approval_and_execution_control` | Applied and committed |
+| `20260821054537` | `mrcip_stage_12c_execution_rls_and_read_models` | Applied and committed |
+| `20260821054726` | `mrcip_stage_12d_gateway_service_authorization_fix` | Applied and committed |
+| `20260821054833` | `mrcip_stage_12e_provider_request_event_audit` | Applied and committed |
+| `20260821054900` | `mrcip_stage_12f_provider_failure_state_hardening` | Applied and committed |
+| `20260821055114` | `mrcip_stage_12g_performance_hardening` | Applied and committed |
 
 ## Verification performed
 
 - Hosted project status is healthy and migration-history/schema queries are working.
-- Exact hosted migration versions are mirrored to GitHub through Stage 11.
+- Exact hosted migration versions are mirrored to GitHub through Stage 12.
 - Stage 9 migrations remain byte-identical to hosted SQL: 9a `d5ea35c966dda3167beb3c0237632ee4bf7dd18c`, 9b `9da3d248a8020e885385516bb0f053f975858689`, 9c `5635670cbba84575f7580dc73b9eb0aa84471d16`.
 - Stage 10 migrations remain byte-identical to hosted SQL: 10a `8a148d63428f79ac4e41b7fd617f385f63486682`, 10b `d0455c007c5f0e87dc3cbaa9995303936d373658`, 10c `90da61b284357645ebe5273ed498c5aadeabba57`, 10d `8b465600a39ed4f706ba280e518a335cde3defb2`, 10e `683a6842b8cbbcce35fdf6f80f025d3b60eb225b`.
-- Stage 11 migrations are byte-identical to hosted SQL: 11a `e0f6193bf06d9a037f6b962db384ea4d2a3146a5`, 11b `bd287b3d30f6686a837af6562a92e1089ca686c1`, 11c `2725939155d12478ce656eae39151b74471cf0d1`, 11d `da1d493749aaaebfd918728419222965142d53cf`.
-- TypeScript database type generation succeeded after Stage 11 and includes the six Stage 11 tables, two Stage 11 views and three public Stage 11 RPCs.
+- Stage 11 migrations remain byte-identical to hosted SQL: 11a `e0f6193bf06d9a037f6b962db384ea4d2a3146a5`, 11b `bd287b3d30f6686a837af6562a92e1089ca686c1`, 11c `2725939155d12478ce656eae39151b74471cf0d1`, 11d `da1d493749aaaebfd918728419222965142d53cf`.
+- Stage 12 migrations are byte-identical to hosted SQL: 12a `918392007f951c7d424e45d9cb6b723cfe55e91c`, 12b `0858dd8f170baf8f3aaeb37004cca412c8d6f321`, 12c `9b0931ce9284e2e638d007efa974423fe9d2da93`, 12d `9760a7450afd3ed38b7e7937a2486853b439441f`, 12e `a17d3b97e616b3f1bb7a943dde86aece5d85a660`, 12f `a549cc6a36e33571306fcc27b2a2018501a72893`, 12g `36fba79b0fdf77e0cf81e6e63638602670f38cb6`.
+- TypeScript database type generation succeeded after Stage 12 and includes the four Stage 12 tables, provider runtime fields, response execution provenance, three Stage 12 read models and Stage 12 workflow/gateway RPCs.
 - Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
 - Stage 4 continues to enforce **PROTECT → VERIFY → DISCLOSE → CONTRACT** and reference-only Finance/Freight/Negotiation integration.
 - Stage 5/6 facilitator, commission, settlement, overpayment, reversal and closeout controls remain unchanged.
 - Stage 7 sampling, custody, laboratory result/certificate/inspection evidence lineage remains unchanged.
 - Stage 8 CRM DNC/contactability, append-only communication history and watchlists remain unchanged.
 - Stage 9 quality, protected risk and opportunity-readiness scoring formulas remain unchanged.
-- Stage 10 reports, watchlist signals and purpose-audited authorised retrieval remain unchanged and form the Stage 11 evidence boundary.
-- Stage 11 adds six RLS-controlled public tables: `mrcip_ai_provider_configs`, `mrcip_ai_requests`, `mrcip_ai_context_items`, `mrcip_ai_responses`, `mrcip_ai_citations`, and `mrcip_ai_reviews`.
-- Stage 11 provider configuration stores governance metadata only; no provider secrets/API keys are stored. No production provider is active after rollback testing.
-- Every Stage 11 request is anchored to a completed Stage 10 retrieval created by the same requester; request/context fields are re-derived from that audited retrieval.
-- Frozen context items are rank-bound, fingerprinted and safe-metadata-only. A caller cannot forge the entity/title/metadata/protection state of a context item.
-- Supported responses require one or more citations when retrieved context exists.
-- External-model responses require an approved active, externally credential-ready provider configuration; protected context additionally requires explicit protected-data approval.
-- All response versions start `review_required`. Human review is the only path to approved status.
-- Approval requires citation, factuality and protection checks. Protected or risk-summary final review requires executive or legal/compliance authority.
-- Authenticated Stage 11 rollback regression passed **11/11** controls, including request/context anti-forgery, citation enforcement, provider gating, review gating, immutable response history, second-final-review rejection and non-member denial.
-- All six Stage 11 tables have RLS and `anon` has no Stage 11 table privileges.
-- Requests, context items, responses, citations and reviews expose authenticated `SELECT,INSERT` only; provider configs expose `SELECT,INSERT,UPDATE` with executive RLS/trigger governance and no DELETE.
-- Public Stage 11 RPCs `prepare_mrcip_ai_request`, `submit_mrcip_ai_response`, and `review_mrcip_ai_response` are SECURITY INVOKER, authenticated-only and fixed-search-path.
-- Stage 11 read models `mrcip_ai_request_summary` and `mrcip_ai_citation_trace` use `security_invoker=true`.
-- Private lifecycle SECURITY DEFINER helpers are trigger-only, fixed-search-path and not directly executable by `anon`/`authenticated`.
-- Security advisor rerun reports no new Stage 11-specific finding. The same pre-existing Auth SECURITY DEFINER warnings and disabled leaked-password protection remain tracked separately.
-- The first Stage 11 performance pass found three missing covering indexes; `20260821052512_mrcip_stage_11d_performance_hardening` remediated all three and the rerun cleared those findings.
-- Final Stage 11 production row counts are zero across provider configs, AI requests, context items, responses, citations and reviews; rollback fixtures left zero counterparty/retrieval residue.
+- Stage 10 reports, watchlist signals and purpose-audited authorised retrieval remain unchanged and remain the evidence-retrieval boundary.
+- Stage 11 frozen request/context/citation/human-review controls remain authoritative and are extended only with controlled external execution provenance.
+- Stage 12 adds four RLS-controlled public tables: `mrcip_ai_prompt_templates`, `mrcip_ai_prompt_versions`, `mrcip_ai_executions`, and `mrcip_ai_execution_events`.
+- Stage 12 provider metadata stores a secret-reference name only; no API key/token/secret value is stored in MRCIP tables.
+- Prompt versions are immutable after creation; approval requires executive/legal-compliance authority and protected-data approval is explicit.
+- External-model responses are gateway-only and cannot be created directly by authenticated users.
+- Every external response must reference a running execution, provider configuration, provider request ID and Stage 11 request/context lineage.
+- Stage 12 gateway/service RPCs for external lifecycle mutation are service-role-only and are not executable by `anon` or `authenticated`.
+- The deployed Edge Function `mrcip-ai-gateway` is version 1, ACTIVE, JWT-verified and mirrored to `supabase/functions/mrcip-ai-gateway/index.ts`; deployment SHA-256 is `df2823d0299b0c15df90486f32cfb3aebb6ac32dc4854647f49ec895294f2ae7`.
+- The current adapter code path is `openai_responses_v1`, but **no production provider row, external credential secret or production model call exists** after Stage 12.
+- Provider activation requires an allowlisted adapter, external credential metadata and successful gateway verification.
+- A missing runtime secret demotes the provider to disabled/not-configured/failed and removes protected-data permission.
+- Stage 12 rollback regression passed **14/14** controls across prompt immutability, provider verification, execution provenance, citation enforcement, telemetry filtering, response gateway exclusivity, human-review handoff, history immutability and missing-secret demotion.
+- One gateway-helper permission defect was discovered during the first regression and remediated in Stage 12d without widening private-schema access.
+- Security advisor rerun reports no new Stage 12-specific finding. The same pre-existing Auth SECURITY DEFINER warnings and disabled leaked-password protection remain tracked separately.
+- The first Stage 12 performance pass found one missing covering index on the execution→response FK; Stage 12g remediated it and the rerun cleared that finding.
+- Final production counts remain zero across provider configs, prompt templates/versions, executions/events, AI requests/context/responses/citations/reviews and the synthetic Stage 12 counterparty fixture.
 - Existing quotation, invoice, VAT, Finance line-item, Payment, commission-settlement, laboratory evidence, CRM/DNC, scoring, Freight, Negotiation, logistics-execution and Auth calculation/access logic was not changed.
-- Formal Stage 11 implementation audit is stored at `docs/mrcip/STAGE_11_IMPLEMENTATION_AUDIT.md`.
+- Formal Stage 12 implementation audit is stored at `docs/mrcip/STAGE_12_IMPLEMENTATION_AUDIT.md`.
 
 ## Ongoing rules
 
@@ -137,5 +144,15 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 26. Protected-context and risk-summary approval remains restricted to executive/legal-compliance authority.
 27. AI provider secrets must never be stored in `mrcip_ai_provider_configs`; credentials must use an approved external secret mechanism.
 28. An external-model response must not be accepted unless the selected provider is active, externally credential-ready and, for protected context, explicitly approved for protected-data processing.
-29. Stage 11 does not authorise autonomous outreach, source disclosure, negotiation, contracting, trading, payment execution or changes to Finance/Freight/commercial-control records.
-30. No system may claim an external AI provider/model is connected merely because a provider metadata row exists; actual provider execution requires a separately implemented and tested execution gateway.
+29. Stage 11/12 do not authorise autonomous outreach, source disclosure, negotiation, contracting, trading, payment execution or changes to Finance/Freight/commercial-control records.
+30. No system may claim an external AI provider/model is connected merely because provider metadata or adapter code exists; actual provider execution requires an active verified provider and approved external secret.
+31. Stage 12 prompt content is versioned and immutable. Changes require a new prompt version and a new approval decision.
+32. Protected external processing requires both provider-level and prompt-version-level protected-data approval.
+33. Authenticated clients must never be granted direct execution-completion, external-response creation or execution-event write authority.
+34. Gateway service RPCs must remain service-role-only and SECURITY INVOKER unless a separately audited change proves a different model is safer.
+35. Provider/model/prompt/context/input execution fingerprints and provider request IDs must remain auditable history.
+36. Runtime telemetry must never persist API keys, Authorization headers, raw request bodies, raw provider response bodies or unfiltered output payloads.
+37. Provider cost must not be fabricated; keep cost unknown/null unless a reliable provider-reported or explicitly configured-rate calculation is implemented and audited.
+38. A missing provider secret must fail closed and must not leave stale active/integration-ready protected-processing state.
+39. The deployed Edge gateway must retain JWT verification and fixed/allowlisted provider endpoints; callers must not be able to supply arbitrary outbound URLs.
+40. Production provider onboarding requires a separate evaluated go-live decision; the Stage 12 gateway being deployed does not by itself make external AI operational.
