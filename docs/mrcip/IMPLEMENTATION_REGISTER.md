@@ -2,60 +2,55 @@
 
 This register is the working source of truth for the Mkhonto Resources Commodity Intelligence Platform implementation.
 
-Status vocabulary:
-
-- **LIVE**
-- **PARTIALLY IMPLEMENTED**
-- **MOCKED**
-- **INTEGRATION-READY**
-- **NOT IMPLEMENTED**
-- **DISABLED**
-- **AWAITING CONFIGURATION**
-- **AWAITING CREDENTIALS**
-- **BLOCKED**
+Status vocabulary: **LIVE**, **PARTIALLY IMPLEMENTED**, **MOCKED**, **INTEGRATION-READY**, **NOT IMPLEMENTED**, **DISABLED**, **AWAITING CONFIGURATION**, **AWAITING CREDENTIALS**, **BLOCKED**.
 
 | Requirement | Status | Implementation Location | Database Impact | Integration | Tests | Issues | Remediation | Sign-off |
 |---|---|---|---|---|---|---|---|---|
-| Supabase project connectivity | LIVE | Hosted Supabase `zjrzzvakwrwkrcqhcnyo` | None | Core platform | Project health checked | SQL tooling password auth failing | Restore valid DB tooling credentials | Pending |
-| Browser Supabase client | INTEGRATION-READY | `src/lib/supabase/client.ts` | None | Auth/Data API | Code inspected | Full app source not in repo | Reuse after source restoration | Pending |
-| Server Supabase client | INTEGRATION-READY | `src/lib/supabase/server.ts` | None | Server components/actions | Code inspected | Full app source not in repo | Reuse after source restoration | Pending |
-| Role-aware route proxy | LIVE | `src/lib/supabase/proxy.ts`, `proxy.ts` | Uses existing RPCs | Admin/Finance/Freight/Driver/Portal | Code inspected | RPC security-definer warnings need review | Review recovered function bodies/grants | Pending |
-| Server portal guard | LIVE | `src/lib/supabase/access.ts` | Uses existing RPCs | Protected layouts/actions | Code inspected | Depends on hosted RPCs | Preserve and extend cautiously | Pending |
-| Hosted migration history recovery | BLOCKED / AWAITING CREDENTIALS | `supabase/migrations/MIGRATION_MANIFEST.md`, recovery workflow | Critical | All future schema changes | Recovery attempted via connected tooling | DB password authentication failure | Restore `SUPABASE_DB_PASSWORD` + access token and run recovery | Required before Stage 1 DDL |
-| Canonical organisation/counterparty identity | PARTIALLY IMPLEMENTED | Existing `public.organisations` identified | Existing table to inspect | Customers/RBAC/MRCIP | Advisor metadata inspected | Columns/FKs/RLS not yet recovered | Confirm schema, then extend rather than duplicate | Pending |
-| Organisation memberships/RBAC | LIVE FOUNDATION | Existing `public.organisation_memberships` + RPCs | Existing | Auth/RBAC | Advisor + code inspected | Duplicate index warning; full policies unknown | Review after schema recovery | Pending |
-| Existing client/customer model | LIVE | Existing `public.clients` | Existing | Finance/MRCIP conversion | Advisor metadata inspected | Columns/FKs unknown | Reuse after schema recovery | Pending |
-| Finance documents | LIVE | Existing `public.finance_documents` | Existing | Quotes/invoices | Advisor metadata inspected | Full schema unknown | Link MRCIP opportunities; do not duplicate | Pending |
-| Finance line items | LIVE | Existing `public.finance_line_items` | Existing | Quote/invoice calculations | Advisor metadata inspected | Calculation implementation not in repo | Regression-protect; do not rewrite blindly | Pending |
-| Payments | LIVE | Existing `public.payments` | Existing | Settlement | Advisor metadata inspected | Full schema unknown | Link opportunities only after schema review | Pending |
-| Freight profitability data | LIVE | Existing `public.freight_analyses` | Existing | MRCIP logistics | Advisor metadata inspected | Full schema/calculation code not in repo | Integrate by reference; do not duplicate calculations | Pending |
-| Negotiation records | LIVE | Existing `public.negotiations` | Existing | Potential opportunity integration | Advisor metadata inspected | Structure unknown | Inspect recovered schema before reuse | Pending |
-| Documents | LIVE | Existing `public.documents` | Existing | KYC/mandates/certificates | Advisor metadata inspected | Storage linkage unknown | Inspect before adding document categories | Pending |
-| Audit events | LIVE | Existing `public.audit_events` | Existing | MRCIP audit trail | Advisor metadata inspected | Event structure unknown | Reuse/extend if fit after schema review | Pending |
-| Vehicles/drivers/trips | LIVE | Existing vehicle/driver/trip tables | Existing | Logistics execution | Advisor metadata inspected | Full schema unknown | Link from logistics opportunities later | Pending |
-| Counterparty multi-role model | NOT IMPLEMENTED | Proposed MRCIP domain | New relational tables/links | Organisations | Not started | Must avoid duplicate company master | Design against recovered `organisations` schema | Pending |
-| Commodity master | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Requirements/offers/matching | Not started | Schema gate | Implement after recovery | Pending |
-| Commodity specification engine | NOT IMPLEMENTED | Proposed MRCIP domain | New relational + controlled JSON structures | Labs/matching | Not started | Schema gate | Implement after recovery | Pending |
-| Mines & operations intelligence | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Organisations/commodities/logistics | Not started | Schema gate | Implement after recovery | Pending |
-| Laboratory network | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Sampling/certificates | Not started | Consolidated seed workbook not located yet | Finalize schema then import verified seed | Pending |
-| Buyer requirements | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Counterparties/matching | Not started | Depends on commodity model | Stage after foundation | Pending |
-| Seller supply offers | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Mines/matching | Not started | Depends on commodity model | Stage after foundation | Pending |
-| Provenance/source evidence | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | All intelligence | Not started | Required before imports | Implement in Stage 1 foundation | Pending |
-| Verification history | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Counterparties/supply/demand | Not started | Required before imports | Implement in Stage 1 foundation | Pending |
-| Import staging system | NOT IMPLEMENTED | Proposed MRCIP domain | New staging tables | File Library seed/workbooks | Design only | Exact consolidated workbook not located | Build after schema recovery; start with controlled batch | Pending |
-| Duplicate detection | NOT IMPLEMENTED | Proposed MRCIP service | New queries/indexes | Import/counterparties | Not started | Requires canonical identity fields | Implement after organisation schema inspection | Pending |
-| Matching engine | NOT IMPLEMENTED | Proposed MRCIP service | New match records | Buyer requirements/seller offers | Not started | Depends on structured data | Implement transparent weighted engine first | Pending |
-| Opportunity / Deal Room | NOT IMPLEMENTED | Proposed MRCIP domain | New opportunity/link tables | Legal/Freight/Finance/Documents | Not started | Depends on match + protection workflow | Later stage | Pending |
-| Protected introductions | NOT IMPLEMENTED | Proposed MRCIP domain/security | New records + RLS | Legal/RBAC | Not started | P0 security requirement | Implement server/RLS/API enforcement | Pending |
-| KYC/KYB | NOT IMPLEMENTED / EXISTING DOCS MAY BE REUSABLE | Proposed MRCIP domain | New structured compliance records + document links | Legal/Documents | Not started | Existing document schema unknown | Inspect and reuse document storage | Pending |
-| Mandate register | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Legal/Opportunities | Not started | Schema gate | Later stage | Pending |
-| Facilitator chain & commissions | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Finance/Legal | Not started | Must validate allocation totals | Later stage | Pending |
-| Sampling & inspection | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Labs/Opportunities/Documents | Not started | Depends on lab model | Later stage | Pending |
-| Outreach CRM | PARTIAL DATA ONLY | Seed spreadsheets/File Library | New relational activity records or reuse if available | Counterparties/opportunities | Not started | Full application CRM schema not recovered | Inspect existing tables then design | Pending |
-| Watchlists | NOT IMPLEMENTED | Proposed MRCIP domain | New tables | Intelligence UI | Not started | None yet | Later stage | Pending |
-| Executive dashboard | NOT IMPLEMENTED | Proposed MRCIP UI | Read models/views | All MRCIP domains | Not started | Must not precede core data foundation | Build after transactional data exists | Pending |
-| Map intelligence | NOT IMPLEMENTED | Proposed MRCIP UI | Location fields/indexes | Mines/buyers/sellers/labs | Not started | Coordinates must be verified | Build after stored location model | Pending |
-| Mkhonto Intelligence AI | NOT IMPLEMENTED | Proposed AI layer | Retrieval/audit metadata | All authorised data | Not started | Requires mature structured/RBAC data | Implement after core workflows | Pending |
-| Leaked-password protection | AWAITING CONFIGURATION | Supabase Auth | None | Auth | Security advisor checked | Disabled | Enable after platform/auth review | Pending |
-| Auth SECURITY DEFINER functions | REVIEW REQUIRED | Hosted public RPCs | Existing functions | Auth/RBAC | Security advisor checked | Three authenticated-callable definer functions flagged | Inspect bodies/search_path/grants before changes | Pending |
-| Full platform regression suite | NOT IMPLEMENTED / NOT AVAILABLE IN REPO | Future tests | None | Finance/Freight/Auth/etc. | Not started | Full source missing | Restore app source, then establish regression tests | Pending |
+| Supabase project connectivity | LIVE | Hosted Supabase `zjrzzvakwrwkrcqhcnyo` | None | Core platform | Project health, schema read, SQL and type generation passed | Previous stale/password tooling failure resolved | No further migration blocker | **SIGNED OFF for Stage 1** |
+| Hosted migration history recovery | LIVE | `supabase/migrations/` + hosted `supabase_migrations` | Recovered authoritative chain | All schema work | All 4 pre-repository migrations recovered; hosted versions reconciled | Original GitHub repository had been deleted | Historical SQL restored and manifest updated | **SIGNED OFF** |
+| Migration source-of-truth manifest | LIVE | `supabase/migrations/MIGRATION_MANIFEST.md` | None | Deployment/change control | Compared against hosted migration list | None current | Keep exact hosted versions | **SIGNED OFF** |
+| Browser Supabase client | INTEGRATION-READY | `src/lib/supabase/client.ts` | None | Auth/Data API | Code inspected | Full Admin UI source is not in this repository | Reuse when full app source is restored/connected | Pending UI stage |
+| Server Supabase client | INTEGRATION-READY | `src/lib/supabase/server.ts` | None | Server components/actions | Code inspected | Full Admin UI source is not in this repository | Reuse when full app source is restored/connected | Pending UI stage |
+| Role-aware route proxy | LIVE | `src/lib/supabase/proxy.ts`, `proxy.ts` | Existing RPCs only | Admin/Finance/Freight/Driver/Portal | Code and recovered RPC bodies inspected | Three pre-existing SECURITY DEFINER advisor warnings | Preserve until separate auth regression remediation | Accepted for Stage 1 |
+| Server portal guard | LIVE | `src/lib/supabase/access.ts` | Existing RPCs | Protected layouts/actions | Code inspected | No MRCIP portal enum yet in partial app source | Extend when Admin UI source is available | Pending UI stage |
+| Existing organisation/tenant model | LIVE | `public.organisations` | Existing preserved | Tenant scope for MRCIP | Full columns/FKs/RLS inspected | It represents platform tenants, not commodity counterparties | MRCIP references it via `organisation_id` | **SIGNED OFF** |
+| Organisation memberships/RBAC | LIVE | `public.organisation_memberships` | Existing preserved | Auth/RBAC | Policies/functions inspected | Pre-existing duplicate-index warning | Do not alter without separate regression pass | **SIGNED OFF for MRCIP reuse** |
+| MRCIP role overlay | LIVE | `public.mrcip_user_roles`, `private.has_mrcip_role` | New | MRCIP field/domain access | Owner seeded; RLS and policies tested | Initial broad read semantics found during audit | Hardened so non-owners need explicit MRCIP roles | **SIGNED OFF** |
+| Existing client/customer model | LIVE | `public.clients` | Existing preserved | Finance + future counterparty conversion | Full schema inspected | No customer records currently | `counterparties.formal_client_id` provides non-duplicating link | **SIGNED OFF for integration** |
+| Counterparty Master | LIVE FOUNDATION | `public.counterparties` | New | CRM/Finance/Legal/MRCIP | Schema, indexes, RLS checked | No intelligence imported yet | Populate through controlled import/research | **SIGNED OFF for foundation** |
+| Multi-role counterparty model | LIVE FOUNDATION | `public.counterparty_roles`, `public.counterparty_role_assignments` | New | Buyer/Seller/Producer/Trader/Lab etc. | 28 role types seeded; RLS checked | No party assignments yet | Populate with seed intelligence | **SIGNED OFF for foundation** |
+| Counterparty contacts | LIVE FOUNDATION | `public.counterparty_contacts` | New | CRM/intelligence | RLS/policy checks passed | Protected-contact access required hardening | Protected contacts restricted to privileged MRCIP roles | **SIGNED OFF for foundation** |
+| Commodity master | LIVE FOUNDATION | `public.commodities` | New | Requirements/offers/matching | 11 commodity groups seeded | None | Extend through controlled settings | **SIGNED OFF for foundation** |
+| Commodity products | LIVE FOUNDATION | `public.commodity_products` | New | Supply/demand/specifications | 58 products seeded | None | Maintain configurable catalogue | **SIGNED OFF for foundation** |
+| Coal specification template | LIVE FOUNDATION | `public.commodity_spec_fields` | New | Labs/matching | 15 structured coal fields seeded | Actual requirement/offer values not built yet | Build specification-value records in buyer/seller stage | **SIGNED OFF for foundation** |
+| Counterparty ↔ commodity relationships | LIVE FOUNDATION | `public.counterparty_commodities` | New | Search/network intelligence | Schema/RLS/index checks passed | Empty until import | Populate through import/manual workflows | **SIGNED OFF for foundation** |
+| Provenance/source evidence | LIVE FOUNDATION | `public.intelligence_sources` | New | All intelligence | RLS and protected-source rules checked | No source evidence imported yet | Require source linkage during import/research | **SIGNED OFF for foundation** |
+| Verification history | LIVE FOUNDATION | `public.verification_records` | New | Counterparties/contacts | Schema/RLS/index checks passed | No verification records yet | Populate only through evidence-backed workflows | **SIGNED OFF for foundation** |
+| Fuzzy/duplicate-search foundation | LIVE FOUNDATION | `pg_trgm` in `extensions`; trigram/name/domain/registration indexes | New indexes | Import/search/dedup | Extension advisor issue remediated | Duplicate review workflow not built | Add duplicate-candidate service in import stage | **SIGNED OFF for foundation** |
+| Stage 1 RLS | LIVE | All 11 new public MRCIP tables | New policies | Security | All tables confirmed `relrowsecurity=true`; policy catalogue checked | Initial `FOR ALL` policies caused duplicate permissive SELECT paths | Split write policies by INSERT/UPDATE/DELETE | **SIGNED OFF** |
+| Stage 1 performance hardening | LIVE | Migration `20260821021629_mrcip_stage_1g_performance_hardening.sql` | New indexes/policy shape | Scale | Performance advisor rerun | New FK/multiple-policy warnings removed; unused indexes expected on empty DB | Reassess after production data volume exists | **SIGNED OFF** |
+| Finance documents | LIVE / UNCHANGED | `public.finance_documents` | Existing untouched | Future MRCIP opportunity link | Schema and row count checked | Full Finance UI/calculation code not in repo | Link later; never duplicate calculations | Protected |
+| Finance line items/VAT | LIVE / UNCHANGED | `public.finance_line_items` | Existing untouched | Quote/invoice calculations | Schema and row count checked | Calculation implementation not in this repo | Regression-test when full source available | Protected |
+| Payments | LIVE / UNCHANGED | `public.payments` | Existing untouched | Settlement | Schema and row count checked | None introduced by MRCIP | Link later | Protected |
+| Freight profitability data | LIVE / UNCHANGED | `public.freight_analyses` | Existing untouched | MRCIP logistics | Schema and row count checked | Freight calculator UI/code not in repo | Integrate by reference later | Protected |
+| Negotiations | LIVE / UNCHANGED | `public.negotiations` | Existing untouched | Commercial workflow | Schema and row count checked | None introduced by MRCIP | Evaluate reuse in Deal Room stage | Protected |
+| Documents/storage | LIVE / UNCHANGED | `public.documents`, `mkhonto-documents` bucket | Existing untouched | KYC/mandates/certificates | Recovered migration inspected | New MRCIP document categories not yet implemented | Reuse existing storage model | Integration-ready |
+| Audit events | LIVE / UNCHANGED | `public.audit_events` | Existing untouched | MRCIP audit trail | Schema inspected | MRCIP-specific event hooks not yet added | Reuse/extend in workflow stages | Integration-ready |
+| Vehicles/drivers/trips | LIVE / UNCHANGED | Existing logistics tables | Existing untouched | Logistics execution | Schema and counts checked | No MRCIP link yet | Integrate in logistics stage | Protected |
+| Mines & operations intelligence | NOT IMPLEMENTED | Next MRCIP relational stage | New | Counterparties/commodities/logistics | Not started | Depends on Stage 1 foundation | Build next | Pending |
+| Laboratory network | NOT IMPLEMENTED | Next MRCIP relational stage | New | Sampling/certificates | Not started | Consolidated workbook not connected in this repo/session | Build registry/capabilities, then import evidence | Pending |
+| Import staging system | NOT IMPLEMENTED | Planned MRCIP import domain | New | XLSX/CSV seed | Mapping document exists | Exact master workbook not connected to implementation runtime | Build staging/validation/dedup before import | Pending |
+| Buyer requirements | NOT IMPLEMENTED | Future MRCIP domain | New | Matching | Not started | Needs requirement/spec value model | Subsequent stage | Pending |
+| Seller supply offers | NOT IMPLEMENTED | Future MRCIP domain | New | Mines/matching | Not started | Needs mine/source model | Subsequent stage | Pending |
+| Matching engine | NOT IMPLEMENTED | Future service | New match records | Requirements/offers | Not started | Needs structured supply/demand | Weighted deterministic engine first | Pending |
+| Opportunity / Deal Room | NOT IMPLEMENTED | Future domain | New | Legal/Freight/Finance/Documents | Not started | Depends on match + protection | Later stage | Pending |
+| Protected introductions | PARTIAL FOUNDATION | Protected contact/source RLS exists | New security foundation | Legal/RBAC | RLS hardening tested | Full NCNDA/KYC disclosure gate not built | Implement transaction-level protection workflow later | Pending |
+| KYC/KYB | NOT IMPLEMENTED / DOCUMENT STORAGE REUSABLE | Future compliance domain | New structured records | Legal/Documents | Not started | None | Reuse existing documents securely | Pending |
+| Mandate register | NOT IMPLEMENTED | Future domain | New | Legal | Not started | None | Later stage | Pending |
+| Sampling & inspection | NOT IMPLEMENTED | Future domain | New | Labs/transactions | Not started | Needs lab registry | Later stage | Pending |
+| Outreach CRM | PARTIAL DATA/MODEL ONLY | Workbook mapping prepared | New/reuse activity records | Counterparties | Not started | Full UI source absent | Build after core entity registries | Pending |
+| Dashboard / Map / Reports | NOT IMPLEMENTED | Admin UI stage | Read models/UI | MRCIP | Not started | Full Admin UI code not present in connected repo | Restore/connect application source first | BLOCKED on full UI source |
+| Mkhonto Intelligence AI | NOT IMPLEMENTED | Future authorised retrieval layer | New audit/retrieval metadata | All MRCIP domains | Not started | Needs mature structured data/RBAC | Later stage | Pending |
+| Leaked-password protection | AWAITING CONFIGURATION | Supabase Auth | None | Auth | Security advisor checked | Disabled; pre-existing | Enable in Supabase Auth settings after login regression check | Pending |
+| Existing Auth SECURITY DEFINER functions | REVIEWED / PRE-EXISTING WARNING | `get_my_access`, `can_access_portal`, onboarding RPC | Existing | Auth/RBAC | Bodies/search_path/grants recovered and inspected | Advisor flags authenticated callable definer functions | Do not change during MRCIP migration; separate security regression task | Accepted with tracked risk |
+| Full platform regression suite | BLOCKED ON FULL APP SOURCE | Application test suite | None | Finance/Freight/Auth/UI | DB regression checks passed; UI tests unavailable | Connected repo is only partial app foundation | Restore/connect complete Admin application source | Pending |
