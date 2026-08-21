@@ -1,0 +1,2 @@
+grant select on public.mrcip_ai_provider_configs,public.mrcip_ai_prompt_versions,public.mrcip_ai_eval_runs,public.mrcip_ai_eval_cases,public.mrcip_ai_provider_rates to service_role;
+grant select,update on public.mrcip_ai_eval_attempts to service_role;
