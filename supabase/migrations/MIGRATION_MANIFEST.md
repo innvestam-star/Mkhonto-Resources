@@ -47,32 +47,44 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 | `20260821030657` | `mrcip_stage_5b_commission_control_foundation` | Applied and committed |
 | `20260821030756` | `mrcip_stage_5c_approval_revision_and_trigger_engine` | Applied and committed |
 | `20260821030906` | `mrcip_stage_5d_lifecycle_hardening` | Applied and committed |
+| `20260821032352` | `mrcip_stage_6a_commission_settlement_foundation` | Applied and committed |
+| `20260821032555` | `mrcip_stage_6b_settlement_reconciliation_engine` | Applied and committed |
+| `20260821032908` | `mrcip_stage_6c_internal_guard_context_hardening` | Applied and committed |
+| `20260821032955` | `mrcip_stage_6d_closeout_guard_alias_hardening` | Applied and committed |
+| `20260821033201` | `mrcip_stage_6e_performance_hardening` | Applied and committed |
 
 ## Verification performed
 
 - Hosted project status: healthy.
 - Full public-schema inspection and migration-history queries: successful.
-- Exact hosted migration versions are mirrored to GitHub through Stage 5.
-- TypeScript database type generation succeeded after Stage 5 and includes facilitator-chain, commission-control tables and Stage 5 RPCs.
-- Stages 1–4 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
+- Exact hosted migration versions are mirrored to GitHub through Stage 6.
+- TypeScript database type generation succeeded after Stage 6 and includes the four settlement tables plus all six controlled settlement RPCs.
+- Stages 1–5 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
 - Stage 4 continues to enforce **PROTECT → VERIFY → DISCLOSE → CONTRACT** and reference-only Finance/Freight/Negotiation integration.
-- Stage 5 introduces revisioned `facilitator_chains` and `facilitator_chain_members`; approved/superseded chains are immutable and hidden intermediary insertion into an approved chain is blocked.
-- Facilitator approval requires every participant to be authority `verified/not_required` and protection `protected/waived`.
-- Stage 5 introduces commission schedules with supported pool bases `percent_of_transaction`, `per_metric_tonne`, and `fixed_amount`.
-- Commission allocations are derived from the schedule pool and approval requires the allocation shares to total exactly **100%**.
-- Commission approval requires a current executed/verified fee-protection record and an approved facilitator chain for the same opportunity.
-- Approved commission commercial terms and allocations are immutable; changes use revision RPCs and prior approved revisions are superseded under controlled rules.
-- Payment-trigger events can link evidence Documents, Finance documents and Payments using tenant-safe relationships. A schedule becomes `payable` only after its configured trigger is verified.
-- Direct `partially_paid`/`paid` status mutation is blocked pending the dedicated settlement workflow.
-- Stage 5 Finance integration is reference-only through `commission_finance_links`; existing Finance/VAT/quote/invoice calculations were not changed.
-- Composite `(organisation_id,id)` identity was added where needed to `opportunity_protection_records` and `payments` so Stage 5 FKs remain tenant-safe.
-- RLS is enabled on all six Stage 5 public tables: `facilitator_chains`, `facilitator_chain_members`, `commission_schedules`, `commission_allocations`, `commission_trigger_events`, and `commission_finance_links`.
-- `anon` has no Stage 5 table privileges. Authenticated grants are explicit and RLS-controlled; the finance-link table is intentionally link-only with no UPDATE grant.
-- End-to-end Stage 5 regression passed eight controls: chain approval; exact 100% 60/40 allocation; approved-chain immutability; approved-allocation immutability; chain-revision introducer preservation; schedule-revision supersession; verified payment-trigger crystallisation to `payable`; and direct settlement bypass blocking.
-- The R10/MT regression pool with 60/40 allocation derived **R6/MT** and **R4/MT** correctly.
-- Stage 5 fixtures were explicitly closed and deleted after the final test; residue checks returned zero fixture counterparties, chains and schedules.
-- Security advisor rerun: no new Stage 5 security findings. Remaining warnings are the same pre-existing authenticated-callable Auth `SECURITY DEFINER` functions and disabled leaked-password protection.
-- Performance advisor rerun: no new Stage 5 missing-FK-index findings. The remaining duplicate organisation-membership index predates MRCIP; unused-index messages are informational while new tables are empty.
+- Stage 5 continues to enforce revisioned facilitator-chain control, exact 100% commission allocation, fee-protection linkage and verified trigger crystallisation before settlement.
+- Stage 6 adds a commission-specific settlement subledger rather than replacing or redefining the existing Finance/Payments models.
+- Stage 6 settlement cycles support all three approved commission bases: `percent_of_transaction`, `per_metric_tonne`, and `fixed_amount`.
+- Per-metric-tonne regression: **R10/MT × 1,000 MT = R10,000**, allocated **R6,000/R4,000** on a 60/40 split.
+- Percentage regression: **2.5% × R200,000 = R5,000**.
+- Fixed-amount regression: **R5,000**, with duplicate active fixed-fee settlement cycles blocked.
+- Main Stage 6 recurring settlement regression passed **9/9 controls**: pool arithmetic, partial reconciliation, overpayment blocking, derived-field immutability, full recurring-cycle settlement, direct paid-bypass blocking, controlled closeout, payout reversal/reopen, and replacement-payout restoration.
+- Fixed schedules become `paid` automatically only after their single settlement cycle is fully verified/settled.
+- Recurring R/MT and percentage schedules remain `partially_paid` after fully settled cycles until an explicit final closeout confirms all obligations are complete.
+- Verified payout reversals recalculate facilitator, batch and schedule balances; replacement payouts can then restore the settled/paid state.
+- Settlement approval and verified payout transitions require controlled source/evidence references; overpayment above a facilitator settlement-item balance is blocked.
+- Stage 6 tests exposed an internal reconciliation guard-context leak; `20260821032908_mrcip_stage_6c_internal_guard_context_hardening` now saves/restores internal guard state on success and exception.
+- Stage 6 tests also exposed a closeout PL/pgSQL alias collision; `20260821032955_mrcip_stage_6d_closeout_guard_alias_hardening` remediated it before final regression sign-off.
+- RLS is enabled on all four Stage 6 public tables: `commission_settlement_batches`, `commission_settlement_items`, `commission_settlement_entries`, and `commission_schedule_closeouts`.
+- `anon` has no Stage 6 table privileges. Authenticated table access is explicit and RLS-controlled; settlement economics remain limited to executive, Finance and Legal/Compliance roles.
+- Public Stage 6 settlement RPCs are invoker-mode; private reconciliation helpers are non-executable by `anon` and `authenticated`.
+- Settlement-item DELETE access was intentionally removed so derived facilitator obligations cannot be erased through the Data API.
+- Stage 6 retains tenant-safe composite relationships to commission schedules/allocations, facilitator members, Finance documents, Payments and evidence Documents.
+- Existing quotation, invoice, VAT, Finance line-item, Payment and Freight calculation logic was not changed. Finance/Payment records are optional settlement evidence/reference only.
+- Final Stage 6 fixture residue checks returned zero test counterparties, settlement batches, settlement items, settlement entries and closeouts. No production settlement data was created by regression tests.
+- Security advisor rerun: no new Stage 6-specific security findings. Remaining warnings are the same pre-existing authenticated-callable Auth `SECURITY DEFINER` functions and disabled leaked-password protection.
+- Performance advisor initially identified one Stage 6 missing covering index for the optional Payment FK. `20260821033201_mrcip_stage_6e_performance_hardening` remediated it; rerun no longer reports the Stage 6 FK warning.
+- Remaining performance notices are expected unused-index messages on empty/new tables plus the pre-existing duplicate organisation-membership index.
+- Formal Stage 6 implementation audit is stored at `docs/mrcip/STAGE_6_IMPLEMENTATION_AUDIT.md`.
 
 ## Ongoing rules
 
@@ -89,4 +101,6 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 11. Protected Deal Room documents must retain restrictive metadata/storage policies and must not fall back to generic organisation-member visibility.
 12. Approved facilitator chains and commission schedules are controlled records. Amendments must create revisions rather than silently rewriting approved history.
 13. Commission allocations must reconcile to exactly 100% of the approved pool before approval.
-14. Do not mark commission as paid without the dedicated settlement workflow and auditable Finance/payment evidence.
+14. Commission schedules must not be marked paid outside the Stage 6 settlement/reconciliation controls.
+15. Verified settlement entries are evidence-bearing commercial records; they may be reversed only through the controlled reversal workflow with a reason and must never be silently deleted or rewritten.
+16. Recurring R/MT and percentage schedules require explicit closeout after all settlement cycles are settled; fixed schedules auto-close only after full verified settlement.
