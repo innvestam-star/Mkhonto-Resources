@@ -42,29 +42,37 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 | `20260821024626` | `mrcip_stage_4e_deal_room_module_links` | Applied and committed |
 | `20260821024645` | `mrcip_stage_4f_protected_document_storage_hardening` | Applied and committed |
 | `20260821024843` | `mrcip_stage_4g_performance_and_grant_hardening` | Applied and committed |
+| `20260821030523` | `mrcip_stage_5a_facilitator_chain_foundation` | Applied and committed |
+| `20260821030615` | `mrcip_stage_5b0_tenant_identity_hardening` | Applied and committed |
+| `20260821030657` | `mrcip_stage_5b_commission_control_foundation` | Applied and committed |
+| `20260821030756` | `mrcip_stage_5c_approval_revision_and_trigger_engine` | Applied and committed |
+| `20260821030906` | `mrcip_stage_5d_lifecycle_hardening` | Applied and committed |
 
 ## Verification performed
 
 - Hosted project status: healthy.
 - Full public-schema inspection and migration-history queries: successful.
-- Exact hosted migration versions are mirrored to GitHub through Stage 4.
-- TypeScript database type generation succeeded after Stage 4 and includes Stage 3 requirement/supply/matching objects, all Stage 4 Deal Room tables, `create_opportunity_from_match(uuid)` and `refresh_opportunity_protocol(uuid)`.
-- RLS is enabled on every Stage 4 Deal Room table.
-- Stage 3 matching remains explainable and audit-preserving: positive fixture **99.80/100**, mandatory-spec failure fixture **50.00/100 disqualified**.
-- Stage 4 opportunity creation is restricted to an eligible human-reviewed match rather than treating an AI/generated match as authority to disclose.
-- Stage 4 implements the transaction gate **PROTECT → VERIFY → DISCLOSE → CONTRACT**.
-- Early protected seller/source disclosure was regression-tested and remained blocked until required protection, buyer verification and authority controls passed.
-- Successful disclosure regression retained approver, discloser, timestamps and prerequisite snapshot, and advanced the opportunity to the contract step.
-- Protected Deal Room storage uses `<organisation-id>/mrcip-protected/...` and restrictive MRCIP storage/document policies.
-- Legacy `documents` ACLs were hardened after audit found inherited anonymous and excessive privileges including `TRUNCATE`; `anon` now has no table privileges and authenticated users retain only required CRUD subject to RLS.
-- Stage 4 Finance, Freight and Negotiation integration is reference-only through link tables; no VAT, quote/invoice, payment, Freight profitability or negotiation calculations were duplicated.
-- Link-only Freight/Finance/Negotiation tables had unnecessary UPDATE rights removed.
-- Composite tenant FKs prevent cross-organisation Deal Room relationships.
-- Security advisor rerun: no new Stage 4 security warnings. Remaining findings are pre-existing authenticated-callable Auth SECURITY DEFINER RPCs and leaked-password protection configuration.
-- Performance advisor rerun: all Stage 4 missing-FK-index findings were remediated. Remaining unused-index notices are informational on new/empty tables; the duplicate organisation-membership index predates MRCIP.
-- All Stage 4 regression fixtures were rolled back or removed; no fixture counterparties, requirements, offers, opportunities, documents or Deal Room links remain.
-- Existing Finance, Freight, Payments, Negotiations and Trips data remained unchanged during Stage 4.
-- Formal Stage 4 implementation audit is stored at `docs/mrcip/STAGE_4_IMPLEMENTATION_AUDIT.md`.
+- Exact hosted migration versions are mirrored to GitHub through Stage 5.
+- TypeScript database type generation succeeded after Stage 5 and includes facilitator-chain, commission-control tables and Stage 5 RPCs.
+- Stages 1–4 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
+- Stage 4 continues to enforce **PROTECT → VERIFY → DISCLOSE → CONTRACT** and reference-only Finance/Freight/Negotiation integration.
+- Stage 5 introduces revisioned `facilitator_chains` and `facilitator_chain_members`; approved/superseded chains are immutable and hidden intermediary insertion into an approved chain is blocked.
+- Facilitator approval requires every participant to be authority `verified/not_required` and protection `protected/waived`.
+- Stage 5 introduces commission schedules with supported pool bases `percent_of_transaction`, `per_metric_tonne`, and `fixed_amount`.
+- Commission allocations are derived from the schedule pool and approval requires the allocation shares to total exactly **100%**.
+- Commission approval requires a current executed/verified fee-protection record and an approved facilitator chain for the same opportunity.
+- Approved commission commercial terms and allocations are immutable; changes use revision RPCs and prior approved revisions are superseded under controlled rules.
+- Payment-trigger events can link evidence Documents, Finance documents and Payments using tenant-safe relationships. A schedule becomes `payable` only after its configured trigger is verified.
+- Direct `partially_paid`/`paid` status mutation is blocked pending the dedicated settlement workflow.
+- Stage 5 Finance integration is reference-only through `commission_finance_links`; existing Finance/VAT/quote/invoice calculations were not changed.
+- Composite `(organisation_id,id)` identity was added where needed to `opportunity_protection_records` and `payments` so Stage 5 FKs remain tenant-safe.
+- RLS is enabled on all six Stage 5 public tables: `facilitator_chains`, `facilitator_chain_members`, `commission_schedules`, `commission_allocations`, `commission_trigger_events`, and `commission_finance_links`.
+- `anon` has no Stage 5 table privileges. Authenticated grants are explicit and RLS-controlled; the finance-link table is intentionally link-only with no UPDATE grant.
+- End-to-end Stage 5 regression passed eight controls: chain approval; exact 100% 60/40 allocation; approved-chain immutability; approved-allocation immutability; chain-revision introducer preservation; schedule-revision supersession; verified payment-trigger crystallisation to `payable`; and direct settlement bypass blocking.
+- The R10/MT regression pool with 60/40 allocation derived **R6/MT** and **R4/MT** correctly.
+- Stage 5 fixtures were explicitly closed and deleted after the final test; residue checks returned zero fixture counterparties, chains and schedules.
+- Security advisor rerun: no new Stage 5 security findings. Remaining warnings are the same pre-existing authenticated-callable Auth `SECURITY DEFINER` functions and disabled leaked-password protection.
+- Performance advisor rerun: no new Stage 5 missing-FK-index findings. The remaining duplicate organisation-membership index predates MRCIP; unused-index messages are informational while new tables are empty.
 
 ## Ongoing rules
 
@@ -79,3 +87,6 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 9. Do not duplicate Finance calculations inside MRCIP; link existing quotation/invoice/payment records by reference.
 10. Protected seller/source disclosure must remain governed by **PROTECT → VERIFY → DISCLOSE → CONTRACT** and must not be bypassed by UI convenience or direct client writes.
 11. Protected Deal Room documents must retain restrictive metadata/storage policies and must not fall back to generic organisation-member visibility.
+12. Approved facilitator chains and commission schedules are controlled records. Amendments must create revisions rather than silently rewriting approved history.
+13. Commission allocations must reconcile to exactly 100% of the approved pool before approval.
+14. Do not mark commission as paid without the dedicated settlement workflow and auditable Finance/payment evidence.
