@@ -59,34 +59,39 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 | `20260821041017` | `mrcip_stage_8a_outreach_crm_foundation` | Applied and committed |
 | `20260821041203` | `mrcip_stage_8b_crm_workflow_and_security` | Applied and committed |
 | `20260821041325` | `mrcip_stage_8c_performance_hardening` | Applied and committed |
+| `20260821042643` | `mrcip_stage_9a_quality_risk_scoring_foundation` | Applied and committed |
+| `20260821042835` | `mrcip_stage_9b_deterministic_scoring_and_read_models` | Applied and committed |
+| `20260821043244` | `mrcip_stage_9c_scoring_integrity_hardening` | Applied and committed |
 
 ## Verification performed
 
 - Hosted project status: healthy.
 - Full public-schema inspection and migration-history queries: successful.
-- Exact hosted migration versions are mirrored to GitHub through Stage 8.
-- TypeScript database type generation succeeded after Stage 8 and includes all seven Stage 8 CRM tables and their tenant-safe relationships.
-- Stages 1–7 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
+- Exact hosted migration versions are mirrored to GitHub through Stage 9.
+- The three Stage 9 SQL files are byte-identical to hosted `schema_migrations.statements`, verified by matching hosted-computed Git blob SHA-1 against GitHub blob SHA: Stage 9a `d5ea35c966dda3167beb3c0237632ee4bf7dd18c`, Stage 9b `9da3d248a8020e885385516bb0f053f975858689`, Stage 9c `5635670cbba84575f7580dc73b9eb0aa84471d16`.
+- TypeScript database type generation succeeded after Stage 9 and includes all five Stage 9 tables, all three Stage 9 operational views and all three scoring refresh RPCs.
+- Stages 1–8 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
 - Stage 4 continues to enforce **PROTECT → VERIFY → DISCLOSE → CONTRACT** and reference-only Finance/Freight/Negotiation integration.
 - Stage 5 continues to enforce revisioned facilitator-chain control, exact 100% commission allocation, fee-protection linkage and verified trigger crystallisation before settlement.
 - Stage 6 continues to enforce a commission-specific settlement subledger, all three approved commission bases, overpayment protection, reversals and controlled recurring closeout without redefining existing Finance/Payments semantics.
 - Stage 7 continues to enforce protected sampling, append-only custody, revisioned laboratory results, protected certificate verification, inspection evidence and controlled seller-spec publication.
-- Stage 8 adds `crm_contact_controls`, `crm_outreach_campaigns`, `crm_outreach_targets`, `crm_activities`, `crm_tasks`, `crm_watchlists`, and `crm_watchlist_items`.
-- Stage 8 reuses canonical counterparties/contacts, buyer requirements, seller offers, opportunities, protected Documents, MRCIP RBAC and audit events. It does not create duplicate customer, opportunity, matching or document models.
-- Contactability is enforced at the database boundary. `do_not_contact` forces outbound channels off; outbound CRM activity/tasks are blocked when DNC or channel restrictions apply. Removing DNC requires executive or Legal/Compliance authority.
-- Protected context is inherited from protected contacts, seller offers, opportunities and campaigns. Protected CRM rows are restricted to privileged MRCIP roles; protected evidence must use `mrcip_protected` Documents.
-- CRM activity history is append-only. Corrections require a new activity linked through `supersedes_activity_id`; the original history cannot be silently rewritten or deleted.
-- Target-to-contact/counterparty/requirement/offer/opportunity relationships are integrity checked. A target cannot be marked `converted` without a real linked commercial object.
-- Completed or cancelled CRM tasks cannot be reopened; a new follow-up task is required.
-- Watchlists are tenant-scoped private/shared collections and propagate protected context from protected seller offers/opportunities.
-- Authenticated Stage 8 regression passed all exercised controls: protected inheritance, permitted outbound logging, DNC outbound blocking, inbound DNC logging without restriction removal, activity immutability, task closeout/reopen blocking, DNC task blocking, conversion gate, commercial linkage, protected watchlist propagation, protected evidence enforcement and cross-counterparty isolation.
-- RLS is enabled on all seven Stage 8 public tables. `anon` has no Stage 8 table privileges. `crm_activities` is Data-API append-only (`SELECT,INSERT`). All ten Stage 8 private guard/helper functions are non-executable by `anon` and `authenticated`.
-- Final Stage 8 production row counts remain zero across contact controls, campaigns, targets, activities, tasks, watchlists and watchlist items after rollback-isolated regression testing.
-- Security advisor rerun: no new Stage 8-specific security finding. Remaining warnings are the same pre-existing authenticated-callable Auth `SECURITY DEFINER` functions and disabled leaked-password protection.
-- Performance advisor identified seven Stage 8 unindexed foreign-key relationships on first pass. `20260821041325_mrcip_stage_8c_performance_hardening` remediated them; rerun no longer reports those Stage 8 FK findings.
-- Remaining performance notices are expected unused-index messages on new/empty tables plus the pre-existing duplicate organisation-membership index.
-- Existing quotation, invoice, VAT, Finance line-item, Payment, Stage 6 commission-settlement, Stage 7 laboratory evidence, Freight, Negotiation and logistics-execution calculation logic was not changed.
-- Formal Stage 8 implementation audit is stored at `docs/mrcip/STAGE_8_IMPLEMENTATION_AUDIT.md`.
+- Stage 8 continues to enforce database-level DNC/channel controls, append-only communication history, protected CRM evidence, controlled conversion and tenant-scoped watchlists without autonomous external sending.
+- Stage 9 adds `mrcip_data_quality_issues`, `counterparty_risk_flags`, `counterparty_quality_snapshots`, `counterparty_risk_snapshots`, and `opportunity_score_snapshots`.
+- Stage 9 separates general data quality from privileged risk. Counterparty risk flags/snapshots and opportunity readiness remain limited to privileged MRCIP roles while general quality can support authorised research/business-development workflows.
+- Counterparty quality v1 is deterministic and versioned. A forged client-supplied **100/A** snapshot for an intentionally incomplete counterparty was recalculated by the database to **5/E with 9 open issues**, proving score fields are not client-authored.
+- Complete buyer and seller fixtures each scored **100/A with zero quality issues**.
+- Counterparty risk v1 is deterministic and evidence-bearing. A complete buyer scored **0/low**; a complete seller with one critical open synthetic risk flag scored **50/high**.
+- Opportunity readiness v1 is deterministic and explainable: match(30) + buyer(15) + seller(15) + protocol(15) + evidence(10) + logistics(5) + commercial(10) − risk penalty(max 15). The Stage 9 regression fixture scored **72.10/strong** with a **7.50** risk penalty.
+- Stage 9 regression confirmed score-snapshot UPDATE is blocked, resolved risk flags cannot reopen, and a quality issue cannot be waived without a reason.
+- Stage 9c remediated two defects found during testing: `complete` protocol state now receives the full **15/15** protocol score, and caller-controlled algorithm labels are normalised before quality-issue lifecycle processing. Generated auto-quality issue evidence/content is immutable.
+- Three operational read models are live with `security_invoker=true`: `mrcip_counterparty_operational_summary`, `mrcip_opportunity_operational_summary`, and `mrcip_pipeline_operational_summary`.
+- Three public Stage 9 refresh RPCs are SECURITY INVOKER and authenticated-only: `refresh_counterparty_quality`, `refresh_counterparty_risk`, and `refresh_opportunity_score`.
+- RLS is enabled on all five Stage 9 public tables and `anon` has no Stage 9 table privileges.
+- Final Stage 9 production row counts remain zero across quality issues, risk flags, quality snapshots, risk snapshots and opportunity snapshots after rollback-isolated regression/hardening tests.
+- Security advisor rerun: no new Stage 9-specific security finding. Remaining warnings are the same pre-existing authenticated-callable Auth `SECURITY DEFINER` functions and disabled leaked-password protection.
+- Performance advisor rerun: no Stage 9 missing-FK-index finding. Remaining notices are expected unused-index messages on new/empty tables plus the pre-existing duplicate organisation-membership index.
+- Existing quotation, invoice, VAT, Finance line-item, Payment, Stage 6 commission-settlement, Stage 7 laboratory evidence, Stage 8 CRM/DNC, Freight, Negotiation, logistics-execution and Auth calculation/access logic was not changed.
+- Formal Stage 9 implementation audit is stored at `docs/mrcip/STAGE_9_IMPLEMENTATION_AUDIT.md`.
 
 ## Ongoing rules
 
@@ -116,3 +121,7 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 24. Protected CRM context and evidence must inherit existing MRCIP protection rules; protected activity evidence must remain `mrcip_protected`.
 25. CRM conversion and outreach must not fabricate or bypass buyer requirements, seller offers, opportunities or the Stage 4 disclosure protocol.
 26. Stage 8 does not authorise autonomous external outreach. Any future sending/provider integration must be separately governed, auditable and subject to contactability/protection controls.
+27. Stage 9 quality/risk/opportunity scores are internal deterministic decision support. They must not be represented as external credit ratings, sanctions opinions, legal opinions or guarantees.
+28. Quality, risk and opportunity scoring snapshots are append-only historical records. Recalculate by creating a new controlled snapshot; never silently rewrite an existing score.
+29. Counterparty risk evidence remains protected. General data-completeness access must not be used to infer or expose privileged risk flags, risk components or protected opportunity scoring.
+30. All scoring algorithms must remain explicit, versioned and auditable. Changes to weights/formulas require a new migration/version and regression evidence rather than silent formula changes.
