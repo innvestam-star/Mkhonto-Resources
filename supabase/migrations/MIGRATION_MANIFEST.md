@@ -62,36 +62,43 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 | `20260821042643` | `mrcip_stage_9a_quality_risk_scoring_foundation` | Applied and committed |
 | `20260821042835` | `mrcip_stage_9b_deterministic_scoring_and_read_models` | Applied and committed |
 | `20260821043244` | `mrcip_stage_9c_scoring_integrity_hardening` | Applied and committed |
+| `20260821045132` | `mrcip_stage_10a_reports_signals_retrieval_foundation` | Applied and committed |
+| `20260821045323` | `mrcip_stage_10b_report_engine_and_security` | Applied and committed |
+| `20260821045414` | `mrcip_stage_10c_watchlist_signal_engine` | Applied and committed |
+| `20260821045457` | `mrcip_stage_10d_authorised_retrieval_foundation` | Applied and committed |
+| `20260821045834` | `mrcip_stage_10e_performance_hardening` | Applied and committed |
 
 ## Verification performed
 
 - Hosted project status: healthy.
 - Full public-schema inspection and migration-history queries: successful.
-- Exact hosted migration versions are mirrored to GitHub through Stage 9.
+- Exact hosted migration versions are mirrored to GitHub through Stage 10.
 - The three Stage 9 SQL files are byte-identical to hosted `schema_migrations.statements`, verified by matching hosted-computed Git blob SHA-1 against GitHub blob SHA: Stage 9a `d5ea35c966dda3167beb3c0237632ee4bf7dd18c`, Stage 9b `9da3d248a8020e885385516bb0f053f975858689`, Stage 9c `5635670cbba84575f7580dc73b9eb0aa84471d16`.
-- TypeScript database type generation succeeded after Stage 9 and includes all five Stage 9 tables, all three Stage 9 operational views and all three scoring refresh RPCs.
-- Stages 1–8 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
+- The five Stage 10 SQL files are byte-identical to hosted migration SQL: Stage 10a `8a148d63428f79ac4e41b7fd617f385f63486682`, Stage 10b `d0455c007c5f0e87dc3cbaa9995303936d373658`, Stage 10c `90da61b284357645ebe5273ed498c5aadeabba57`, Stage 10d `8b465600a39ed4f706ba280e518a335cde3defb2`, Stage 10e `683a6842b8cbbcce35fdf6f80f025d3b60eb225b`.
+- TypeScript database type generation succeeded after Stage 10 and includes the four Stage 10 tables, three Stage 10 views and three public Stage 10 RPCs.
+- Stages 1–9 remain signed off; Stage 3 matching regressions remain **99.80/100 candidate** and **50.00/100 disqualified** for the mandatory-CV failure fixture.
 - Stage 4 continues to enforce **PROTECT → VERIFY → DISCLOSE → CONTRACT** and reference-only Finance/Freight/Negotiation integration.
 - Stage 5 continues to enforce revisioned facilitator-chain control, exact 100% commission allocation, fee-protection linkage and verified trigger crystallisation before settlement.
 - Stage 6 continues to enforce a commission-specific settlement subledger, all three approved commission bases, overpayment protection, reversals and controlled recurring closeout without redefining existing Finance/Payments semantics.
 - Stage 7 continues to enforce protected sampling, append-only custody, revisioned laboratory results, protected certificate verification, inspection evidence and controlled seller-spec publication.
 - Stage 8 continues to enforce database-level DNC/channel controls, append-only communication history, protected CRM evidence, controlled conversion and tenant-scoped watchlists without autonomous external sending.
-- Stage 9 adds `mrcip_data_quality_issues`, `counterparty_risk_flags`, `counterparty_quality_snapshots`, `counterparty_risk_snapshots`, and `opportunity_score_snapshots`.
-- Stage 9 separates general data quality from privileged risk. Counterparty risk flags/snapshots and opportunity readiness remain limited to privileged MRCIP roles while general quality can support authorised research/business-development workflows.
-- Counterparty quality v1 is deterministic and versioned. A forged client-supplied **100/A** snapshot for an intentionally incomplete counterparty was recalculated by the database to **5/E with 9 open issues**, proving score fields are not client-authored.
-- Complete buyer and seller fixtures each scored **100/A with zero quality issues**.
-- Counterparty risk v1 is deterministic and evidence-bearing. A complete buyer scored **0/low**; a complete seller with one critical open synthetic risk flag scored **50/high**.
-- Opportunity readiness v1 is deterministic and explainable: match(30) + buyer(15) + seller(15) + protocol(15) + evidence(10) + logistics(5) + commercial(10) − risk penalty(max 15). The Stage 9 regression fixture scored **72.10/strong** with a **7.50** risk penalty.
-- Stage 9 regression confirmed score-snapshot UPDATE is blocked, resolved risk flags cannot reopen, and a quality issue cannot be waived without a reason.
-- Stage 9c remediated two defects found during testing: `complete` protocol state now receives the full **15/15** protocol score, and caller-controlled algorithm labels are normalised before quality-issue lifecycle processing. Generated auto-quality issue evidence/content is immutable.
-- Three operational read models are live with `security_invoker=true`: `mrcip_counterparty_operational_summary`, `mrcip_opportunity_operational_summary`, and `mrcip_pipeline_operational_summary`.
-- Three public Stage 9 refresh RPCs are SECURITY INVOKER and authenticated-only: `refresh_counterparty_quality`, `refresh_counterparty_risk`, and `refresh_opportunity_score`.
-- RLS is enabled on all five Stage 9 public tables and `anon` has no Stage 9 table privileges.
-- Final Stage 9 production row counts remain zero across quality issues, risk flags, quality snapshots, risk snapshots and opportunity snapshots after rollback-isolated regression/hardening tests.
-- Security advisor rerun: no new Stage 9-specific security finding. Remaining warnings are the same pre-existing authenticated-callable Auth `SECURITY DEFINER` functions and disabled leaked-password protection.
-- Performance advisor rerun: no Stage 9 missing-FK-index finding. Remaining notices are expected unused-index messages on new/empty tables plus the pre-existing duplicate organisation-membership index.
-- Existing quotation, invoice, VAT, Finance line-item, Payment, Stage 6 commission-settlement, Stage 7 laboratory evidence, Stage 8 CRM/DNC, Freight, Negotiation, logistics-execution and Auth calculation/access logic was not changed.
-- Formal Stage 9 implementation audit is stored at `docs/mrcip/STAGE_9_IMPLEMENTATION_AUDIT.md`.
+- Stage 9 continues to enforce explicit/versioned quality, protected risk and explainable opportunity-readiness snapshots.
+- Stage 10 adds `mrcip_report_definitions`, `mrcip_report_runs`, `mrcip_watchlist_signal_snapshots`, and `mrcip_retrieval_requests` without duplicating Stage 8 watchlists or Stage 9 operational read models.
+- Stage 10 report runs are database-derived. The regression attempted a forged `row_count=999` and forged JSON summary; the database replaced both with the deterministic `mrcip-report-v1` result.
+- Stage 10 watchlist signals are database-derived. The regression attempted a forged 999/critical/fake snapshot; the database recalculated the test entity to exactly **2 signals / high** and removed the fabricated payload.
+- Stage 10 retrieval is purpose-audited, bounded to 50 results, RLS-aware and protected-context gated. The protected-offer regression returned **0** without protected access and **1** with privileged protected retrieval.
+- A submitted retrieval audit `result_count=999` was recalculated to **1**. Authenticated UPDATE of retrieval audit history was denied.
+- A research analyst could retrieve non-protected intelligence but was denied protected retrieval and denied a protected risk-register report.
+- All three Stage 10 public RPCs are SECURITY INVOKER and non-anonymous: `generate_mrcip_report`, `refresh_watchlist_signals`, `search_mrcip_intelligence`.
+- All three Stage 10 public views use `security_invoker=true`: `mrcip_report_catalog_summary`, `mrcip_watchlist_signal_current`, `mrcip_retrieval_audit_summary`.
+- RLS is enabled on all four Stage 10 public tables and `anon` has no Stage 10 table privileges.
+- Report-run, signal-snapshot and retrieval-request history is append-only through authenticated grants (`SELECT,INSERT` only).
+- `private.mrcip_retrieval_candidates(...)` is intentionally authenticated-executable because the public SECURITY INVOKER search RPC calls it; it remains in `private`, is SECURITY INVOKER and all underlying RLS remains authoritative.
+- Final Stage 10 production row counts remain zero across report definitions, report runs, signal snapshots and retrieval requests after rollback-isolated tests.
+- Security advisor rerun: no new Stage 10-specific security finding. Remaining warnings are the same pre-existing authenticated-callable Auth SECURITY DEFINER functions and disabled leaked-password protection.
+- Performance advisor initially found five Stage 10 FK relationships lacking covering indexes; `20260821045834_mrcip_stage_10e_performance_hardening` remediated all five, and the rerun no longer reports those findings.
+- Existing quotation, invoice, VAT, Finance line-item, Payment, Stage 6 commission-settlement, Stage 7 laboratory evidence, Stage 8 CRM/DNC, Stage 9 scoring, Freight, Negotiation, logistics-execution and Auth calculation/access logic was not changed.
+- Formal Stage 10 implementation audit is stored at `docs/mrcip/STAGE_10_IMPLEMENTATION_AUDIT.md`.
 
 ## Ongoing rules
 
@@ -125,3 +132,9 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 28. Quality, risk and opportunity scoring snapshots are append-only historical records. Recalculate by creating a new controlled snapshot; never silently rewrite an existing score.
 29. Counterparty risk evidence remains protected. General data-completeness access must not be used to infer or expose privileged risk flags, risk components or protected opportunity scoring.
 30. All scoring algorithms must remain explicit, versioned and auditable. Changes to weights/formulas require a new migration/version and regression evidence rather than silent formula changes.
+31. Stage 10 report runs must remain database-derived snapshots; clients must not author report summaries or row counts.
+32. Stage 10 signal snapshots must remain derived from the canonical watched entity and existing Stage 8 watchlists; do not create a duplicate watchlist model or allow caller-authored alert payloads.
+33. Protected watchlist signals and protected retrieval remain privileged MRCIP context and must not leak into general research/business-development access.
+34. Intelligence retrieval must remain RLS-aware, purpose-audited and bounded; it must not expose protected contacts, mine protected details, commercial pricing/payment terms, KYC/banking or facilitator/commission information through convenience search metadata.
+35. Retrieval/reporting is decision support only. It must not automatically contact a party, disclose a protected source, approve a deal, execute a contract, change a score, or mutate Finance/Freight/Negotiation calculations.
+36. Report-run, signal-snapshot and retrieval-request histories are append-only audit records through authenticated grants. Recompute by adding a new run/snapshot/request rather than rewriting history.
