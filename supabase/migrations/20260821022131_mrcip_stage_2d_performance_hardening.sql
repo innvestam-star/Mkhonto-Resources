@@ -1,0 +1,1 @@
+create index intelligence_duplicate_candidates_org_idx on public.intelligence_duplicate_candidates (organisation_id);
