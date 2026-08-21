@@ -35,24 +35,36 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 | `20260821023242` | `mrcip_stage_3d_data_api_least_privilege_hardening` | Applied and committed |
 | `20260821023355` | `mrcip_stage_3e_performance_hardening` | Applied and committed |
 | `20260821023527` | `mrcip_stage_3f_certificate_tenant_integrity` | Applied and committed |
+| `20260821024154` | `mrcip_stage_4a_document_acl_hardening` | Applied and committed |
+| `20260821024314` | `mrcip_stage_4b_opportunity_and_protocol_foundation` | Applied and committed |
+| `20260821024343` | `mrcip_stage_4c_opportunity_protocol_rls` | Applied and committed |
+| `20260821024432` | `mrcip_stage_4d_protect_verify_disclose_contract_engine` | Applied and committed |
+| `20260821024626` | `mrcip_stage_4e_deal_room_module_links` | Applied and committed |
+| `20260821024645` | `mrcip_stage_4f_protected_document_storage_hardening` | Applied and committed |
+| `20260821024843` | `mrcip_stage_4g_performance_and_grant_hardening` | Applied and committed |
 
 ## Verification performed
 
 - Hosted project status: healthy.
 - Full public-schema inspection and migration-history queries: successful.
-- Exact hosted migration versions are mirrored to GitHub through Stage 3.
-- TypeScript database type generation succeeded after Stage 3 and includes the Stage 3 tables and matching RPC.
-- RLS is enabled on `buyer_requirements`, `buyer_requirement_specs`, `seller_supply_offers`, `seller_offer_specs`, and `commodity_matches`.
-- Stage 3 Data API exposure is explicit: `authenticated` receives only `SELECT`, `INSERT`, `UPDATE`, and `DELETE`; excess `TRUNCATE`, `REFERENCES`, and `TRIGGER` privileges discovered from legacy default ACLs were revoked.
-- Protected seller offers and all dependent seller specification/match records inherit privileged MRCIP visibility rules.
-- Tenant integrity is enforced with composite `(organisation_id, id)` foreign keys, including assay/certificate document linkage after Stage 3f hardening.
-- The matching RPC `refresh_buyer_requirement_matches(uuid)` is `SECURITY INVOKER`, has no anon/public execute grant, and retains an explicit privileged MRCIP-role check.
-- Positive matching regression: compatible coal fixture scored **99.80/100**, passed hard filters, and had zero mandatory specification failures.
-- Negative matching regression: a mandatory calorific-value failure scored **50.00/100**, failed hard filters, and was persisted as `disqualified` with one failed-specification evidence item.
-- Both regression fixtures ran in rolled-back transactions; no test rows remain in live intelligence tables.
-- Security advisor rerun: no new Stage 3 security warnings. Remaining warnings are the pre-existing authenticated-callable Auth SECURITY DEFINER RPCs and leaked-password configuration finding.
-- Performance advisor rerun: all Stage 3 missing-FK-index findings were remediated. Remaining unused-index notices are expected while new tables are empty; the duplicate organisation-membership index predates MRCIP.
-- Existing Finance, Freight, Payments, Negotiations and Trips schemas/calculations were not modified and their row counts remained unchanged during Stage 3.
+- Exact hosted migration versions are mirrored to GitHub through Stage 4.
+- TypeScript database type generation succeeded after Stage 4 and includes Stage 3 requirement/supply/matching objects, all Stage 4 Deal Room tables, `create_opportunity_from_match(uuid)` and `refresh_opportunity_protocol(uuid)`.
+- RLS is enabled on every Stage 4 Deal Room table.
+- Stage 3 matching remains explainable and audit-preserving: positive fixture **99.80/100**, mandatory-spec failure fixture **50.00/100 disqualified**.
+- Stage 4 opportunity creation is restricted to an eligible human-reviewed match rather than treating an AI/generated match as authority to disclose.
+- Stage 4 implements the transaction gate **PROTECT → VERIFY → DISCLOSE → CONTRACT**.
+- Early protected seller/source disclosure was regression-tested and remained blocked until required protection, buyer verification and authority controls passed.
+- Successful disclosure regression retained approver, discloser, timestamps and prerequisite snapshot, and advanced the opportunity to the contract step.
+- Protected Deal Room storage uses `<organisation-id>/mrcip-protected/...` and restrictive MRCIP storage/document policies.
+- Legacy `documents` ACLs were hardened after audit found inherited anonymous and excessive privileges including `TRUNCATE`; `anon` now has no table privileges and authenticated users retain only required CRUD subject to RLS.
+- Stage 4 Finance, Freight and Negotiation integration is reference-only through link tables; no VAT, quote/invoice, payment, Freight profitability or negotiation calculations were duplicated.
+- Link-only Freight/Finance/Negotiation tables had unnecessary UPDATE rights removed.
+- Composite tenant FKs prevent cross-organisation Deal Room relationships.
+- Security advisor rerun: no new Stage 4 security warnings. Remaining findings are pre-existing authenticated-callable Auth SECURITY DEFINER RPCs and leaked-password protection configuration.
+- Performance advisor rerun: all Stage 4 missing-FK-index findings were remediated. Remaining unused-index notices are informational on new/empty tables; the duplicate organisation-membership index predates MRCIP.
+- All Stage 4 regression fixtures were rolled back or removed; no fixture counterparties, requirements, offers, opportunities, documents or Deal Room links remain.
+- Existing Finance, Freight, Payments, Negotiations and Trips data remained unchanged during Stage 4.
+- Formal Stage 4 implementation audit is stored at `docs/mrcip/STAGE_4_IMPLEMENTATION_AUDIT.md`.
 
 ## Ongoing rules
 
@@ -63,4 +75,7 @@ Do not create a fresh baseline. The files below correspond to the hosted migrati
 5. Preserve Finance, Freight, Auth and existing protected-route behaviour unless a separately tested remediation requires modification.
 6. Intelligence imports must enter through staging/validation/duplicate review; never silently overwrite master records.
 7. Matching must remain explainable and auditable: component scores, hard filters, failed mandatory fields, algorithm version and reviewer decisions must be retained.
-8. Do not duplicate Freight profitability calculations inside the matching engine; future logistics economics must integrate the existing Freight module by reference.
+8. Do not duplicate Freight profitability calculations inside MRCIP; integrate the existing Freight module by reference.
+9. Do not duplicate Finance calculations inside MRCIP; link existing quotation/invoice/payment records by reference.
+10. Protected seller/source disclosure must remain governed by **PROTECT → VERIFY → DISCLOSE → CONTRACT** and must not be bypassed by UI convenience or direct client writes.
+11. Protected Deal Room documents must retain restrictive metadata/storage policies and must not fall back to generic organisation-member visibility.
