@@ -1,0 +1,7 @@
+create index crm_outreach_campaigns_product_cover_idx on public.crm_outreach_campaigns(organisation_id,product_id);
+create index crm_watchlist_items_counterparty_cover_idx on public.crm_watchlist_items(organisation_id,counterparty_id);
+create index crm_watchlist_items_mine_cover_idx on public.crm_watchlist_items(organisation_id,mine_id);
+create index crm_watchlist_items_laboratory_cover_idx on public.crm_watchlist_items(organisation_id,laboratory_id);
+create index crm_watchlist_items_requirement_cover_idx on public.crm_watchlist_items(organisation_id,buyer_requirement_id);
+create index crm_watchlist_items_offer_cover_idx on public.crm_watchlist_items(organisation_id,seller_offer_id);
+create index crm_watchlist_items_opportunity_cover_idx on public.crm_watchlist_items(organisation_id,opportunity_id);
