@@ -1,0 +1,1 @@
+create index mrcip_ai_executions_response_cover_idx on public.mrcip_ai_executions(organisation_id,response_id) where response_id is not null;
