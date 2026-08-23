@@ -157,7 +157,24 @@ async function execute(token: string, requesterId: string, requestId: string, pr
     p_provider_config_id: providerConfigId,
     p_prompt_version_id: promptVersionId,
   }, token, false) as string;
-  const payload = await rpc('mrcip_ai_gateway_start_execution', { p_execution_id: executionId, p_requester_id: requesterId }, SERVICE_ROLE_KEY, true) as Record<string, unknown>;
+
+  let payload: Record<string, unknown>;
+  try {
+    payload = await rpc('mrcip_ai_gateway_start_execution', { p_execution_id: executionId, p_requester_id: requesterId }, SERVICE_ROLE_KEY, true) as Record<string, unknown>;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Stage 14 runtime start was rejected';
+    if (message.includes('Stage 14')) {
+      try {
+        await failExecution(executionId, requesterId, 'blocked', 'STAGE14_START_REJECTED', message, null, { stage14_start_rejected: true });
+      } catch (cleanupErr) {
+        const cleanupMessage = cleanupErr instanceof Error ? cleanupErr.message : 'Unable to record Stage 14 start rejection';
+        return reply(500, { status: 'failed', execution_id: executionId, code: 'STAGE14_START_CLEANUP_FAILED', message: cleanupMessage.slice(0, 500) });
+      }
+      return reply(409, { status: 'blocked', execution_id: executionId, code: 'STAGE14_START_REJECTED', message: message.slice(0, 500) });
+    }
+    throw err;
+  }
+
   const adapter = String(payload.adapter_key ?? '');
   const model = String(payload.model_name ?? '');
   const secretRef = String(payload.credential_secret_ref ?? '');
