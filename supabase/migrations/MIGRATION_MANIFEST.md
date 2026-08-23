@@ -197,4 +197,4 @@ After successful recovery:
 
 **Stages 0–13 are signed off at their documented database/security/commercial-control boundaries. Stage 13 migration provenance is fully reconciled.**
 
-The next schema stage, if authorised, must begin from this chain without rewriting history.
+**Stage 14 is the next controlled schema/implementation stage and must begin from this chain without rewriting history.**
