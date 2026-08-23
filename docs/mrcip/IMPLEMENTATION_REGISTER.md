@@ -27,7 +27,7 @@ Status vocabulary: **LIVE**, **LIVE FOUNDATION**, **LIVE GATE**, **PARTIALLY IMP
 | Stage 13 — Provider rates and budget policies | LIVE FOUNDATION | Versioned commercial rate cards and governed spend limits | Exact 13b/13d provenance; schema/types verified | Production rate cards and budgets unconfigured | **SIGNED OFF for foundation** |
 | Stage 13 — Production provider onboarding / revocation gate | LIVE GATE / PROVIDER DISABLED | Evaluated onboarding, approval, refusal and revocation controls | Exact 13d/13f provenance; no active production provider/onboarding rows | Provider deliberately unconfigured; sign-off is not go-live approval | **SIGNED OFF for gate** |
 | Stage 13 — Migration provenance | LIVE / RECONCILED | Hosted `supabase_migrations.schema_migrations` ↔ GitHub migration files | **9/9 Stage 13 migration Git blob SHAs exact**; 13c/13d recovered in `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec` | None | **SIGNED OFF** |
-| Stage 13 — Security / ACL / runtime closeout | LIVE / REMEDIATED | Programme ACL hardening + service-role gateway boundaries + decommissioned temporary exporters | **86 / 0 / 0** ACL audit; temporary privileged export RPC removed; temporary exporter returns JWT-protected HTTP 410 | Same pre-existing Auth warnings remain separately tracked | **SIGNED OFF** |
+| Stage 13 — Security / ACL / runtime closeout | LIVE / REMEDIATED | Programme ACL hardening + service-role gateway boundaries + decommissioned temporary provenance exporter | **86 / 0 / 0** ACL audit; temporary privileged export RPC removed; `mrcip-stage13-export` returns JWT-protected HTTP 410 | Same pre-existing Auth warnings remain separately tracked | **SIGNED OFF** |
 
 ## Protected existing modules
 
