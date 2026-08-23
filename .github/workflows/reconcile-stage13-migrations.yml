@@ -156,3 +156,35 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Recover exact Stage 13c and 13d hosted migrations"
           git push origin HEAD:mrcip/phase-0-audit
+
+      - name: Record failed recovery and remove one-time workflow
+        if: failure()
+        shell: bash
+        run: |
+          set -u
+          git fetch origin mrcip/phase-0-audit
+          git reset --hard origin/mrcip/phase-0-audit
+
+          mkdir -p docs/mrcip
+          cat > docs/mrcip/STAGE_13_PROVENANCE_RECOVERY_FAILURE.md <<EOF
+          # Stage 13 provenance recovery workflow failure
+
+          The one-time exact migration recovery workflow did not complete successfully.
+
+          - GitHub Actions run ID: ${GITHUB_RUN_ID}
+          - Trigger commit: ${GITHUB_SHA}
+          - Recovery target: Stage 13c and Stage 13d only
+          - Production database mutation: none
+          - Secrets persisted to repository: none
+
+          Inspect the GitHub Actions job logs for this run before retrying. Do not replace the hosted migration bodies with a hand-reconstructed approximation.
+          EOF
+
+          if [ -f .github/workflows/reconcile-stage13-migrations.yml ]; then
+            git rm .github/workflows/reconcile-stage13-migrations.yml
+          fi
+          git add docs/mrcip/STAGE_13_PROVENANCE_RECOVERY_FAILURE.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Record Stage 13 provenance recovery workflow failure" || exit 0
+          git push origin HEAD:mrcip/phase-0-audit
