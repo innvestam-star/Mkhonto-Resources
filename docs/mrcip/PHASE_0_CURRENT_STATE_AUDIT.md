@@ -2,9 +2,11 @@
 
 ## Phase 0 — Current-State Audit and Stage 1 Gate
 
-Status: **IN PROGRESS — SCHEMA RECOVERY BLOCKER IDENTIFIED**
+**Original audit date:** August 2026  
+**Close-out date:** 23 August 2026  
+**Status:** **CLOSED — SCHEMA RECOVERY RESOLVED; IMPLEMENTATION ADVANCED THROUGH STAGE 13**
 
-This audit records only functionality and infrastructure that has been inspected or independently surfaced by the connected Mkhonto Resources GitHub and Supabase environments. It does not assume that a feature exists merely because it appears in a planning prompt.
+This document preserves the conclusions of the original Phase 0 current-state audit while reconciling facts that changed after the initial inspection. The original audit correctly treated unverified functionality as absent and identified schema/migration recovery as a blocker. That blocker was subsequently resolved; the earlier “blocked” statements are historical point-in-time findings, not the present platform state.
 
 ## 1. Connected production foundation
 
@@ -14,11 +16,10 @@ This audit records only functionality and infrastructure that has been inspected
 - Project reference: `zjrzzvakwrwkrcqhcnyo`
 - Region: `eu-west-2`
 - Database: PostgreSQL 17
-- Project health: `ACTIVE_HEALTHY`
-- Supabase Auth service: running
-- Supabase Storage: configured in local Supabase config
-- Supabase Realtime: configured in local Supabase config
-- Edge Functions: none currently deployed
+- Hosted schema/migration access: **operational**
+- Supabase Auth: live
+- Supabase Storage: available
+- Supabase Edge Functions: now used by the governed AI gateway layer introduced after Phase 0
 
 Classification: **LIVE**
 
@@ -26,9 +27,9 @@ Classification: **LIVE**
 
 Repository: `innvestam-star/Mkhonto-Resources`
 
-The connected repository is not currently a complete copy of the full Mkhonto Resources Admin Platform application. The repository README explicitly states that it contains the Next.js/Supabase integration foundation and that the full application source still needs to be restored.
+The connected repository remains a partial application source rather than the complete Mkhonto Resources Admin Platform. It contains the Supabase/Next.js foundation, migrations, MRCIP governance documentation and Edge gateway source, but the complete Admin/Finance/Freight UI source is still not present.
 
-Observed repository components include:
+Verified reusable application foundation includes:
 
 - `src/lib/supabase/client.ts`
 - `src/lib/supabase/server.ts`
@@ -36,38 +37,17 @@ Observed repository components include:
 - `src/lib/supabase/access.ts`
 - root `proxy.ts`
 - `supabase/config.toml`
-- Supabase recovery/verification workflows
-- migration manifest
+- `supabase/migrations/`
+- `supabase/functions/`
+- MRCIP stage audit/register documentation
 
-No complete admin-page/application source tree is currently present in this repository.
+Classification: **PARTIAL APPLICATION SOURCE / LIVE DATABASE FOUNDATION**
 
-Classification: **PARTIALLY IMPLEMENTED / SOURCE RECOVERY REQUIRED**
+This limitation means database/security/control-layer sign-off must not be represented as full browser/UI regression sign-off.
 
 ## 3. Existing Auth and protected-route foundation
 
-Verified reusable components:
-
-### Browser Supabase client
-
-`src/lib/supabase/client.ts`
-
-Uses the publishable Supabase key and relies on Auth + RLS for data protection.
-
-Classification: **INTEGRATION-READY**
-
-### Server Supabase client
-
-`src/lib/supabase/server.ts`
-
-Uses a request-scoped Supabase SSR client and cookie-based session propagation.
-
-Classification: **INTEGRATION-READY**
-
-### Route/session proxy
-
-`src/lib/supabase/proxy.ts`
-
-Recognises protected portal families:
+The original audit identified reusable Auth/session/protected-route components and protected route families:
 
 - `admin`
 - `finance`
@@ -75,24 +55,41 @@ Recognises protected portal families:
 - `driver`
 - `portal`
 
-The proxy validates claims and calls database RPCs to determine portal access.
-
-Classification: **LIVE FOUNDATION / REUSABLE**
-
-### Server-side portal guard
-
-`src/lib/supabase/access.ts`
-
-Uses:
+The existing access RPCs include:
 
 - `can_access_portal(...)`
 - `get_my_access()`
+- organisation onboarding/access logic
 
-Classification: **LIVE FOUNDATION / REUSABLE**
+MRCIP implementation has intentionally reused/preserved these boundaries rather than redesigning Auth during commodity-intelligence stages.
 
-## 4. Existing database surface identified
+Current Security Advisor still reports three authenticated-callable `SECURITY DEFINER` Auth/access RPC warnings:
 
-Direct schema inspection is temporarily blocked by database credential authentication failure. However, the Supabase Database Advisors expose the following existing public tables through index/advisor metadata:
+- `public.can_access_portal(p_portal text, p_organisation_id uuid)`
+- `public.complete_organisation_onboarding(p_name text, p_trading_name text, p_industry text)`
+- `public.get_my_access()`
+
+These remain **pre-existing tracked warnings** and require a dedicated Auth/login/protected-route regression pass before modification. Supabase leaked-password protection also remains disabled and is tracked as configuration hardening.
+
+## 4. Schema-recovery blocker — resolved
+
+At the time of the original Phase 0 audit, direct schema inspection, read-only SQL and TypeScript type generation were temporarily blocked by database-role authentication failures. The hosted project itself remained healthy.
+
+That blocker was later resolved. The authoritative hosted migration records and SQL statement bodies were recovered from:
+
+`supabase_migrations.schema_migrations`
+
+The four migrations predating the reconstructed repository were restored to source control, and later MRCIP DDL has been applied as versioned hosted migrations and mirrored to GitHub.
+
+The current migration source of truth is:
+
+`supabase/migrations/MIGRATION_MANIFEST.md`
+
+**Do not create a fresh baseline or replace hosted history with manually invented SQL.**
+
+## 5. Existing platform entities protected from MRCIP regressions
+
+Phase 0 identified the existing platform entities that MRCIP should integrate with rather than duplicate:
 
 - `organisations`
 - `organisation_memberships`
@@ -109,299 +106,156 @@ Direct schema inspection is temporarily blocked by database credential authentic
 - `freight_analyses`
 - `negotiations`
 - `audit_events`
+- `profiles`
 
-These table names are verified as existing, but their complete columns, constraints, foreign keys and RLS policies have not yet been recovered.
+Protected regression zones remain:
 
-Classification: **LIVE — STRUCTURE PARTIALLY INSPECTED**
-
-## 5. Existing modules that MRCIP should reuse
-
-Subject to column-level verification after schema recovery, the MRCIP architecture should prefer reuse of the following existing entities rather than duplication:
-
-| Existing entity | Proposed MRCIP reuse |
-|---|---|
-| `organisations` | Canonical company/counterparty identity |
-| `organisation_memberships` | User-to-organisation access, tenant and RBAC foundation |
-| `clients` | Existing formal customer/client relationship layer |
-| `documents` | Commodity certificates, KYC, mandates, NCNDA and supporting files where structurally suitable |
-| `finance_documents` | Quotations/invoices/approved commercial documents integration |
-| `finance_line_items` | Existing financial line-item engine; do not duplicate calculations |
-| `payments` | Settlement/payment linkage where applicable |
-| `freight_analyses` | Logistics/freight economics and transport analysis integration |
-| `negotiations` | Potential commercial negotiation linkage after schema review |
-| `audit_events` | MRCIP audit trail integration if the current structure supports required sensitivity/event metadata |
-| `vehicles`, `drivers`, `trips`, `trip_events` | Logistics execution integration where commodity opportunities convert to haulage work |
-
-## 6. Functionality that must not be broken
-
-The following areas are protected regression zones for MRCIP work:
-
-- Supabase Auth and session handling
-- role-aware protected routes
-- Admin access
-- Finance Admin
-- Freight Admin
-- customer/client records
-- quotations and invoices
-- VAT calculations
-- fixed-amount line items
-- finance document relationships
-- freight profitability analysis
-- payments
-- fleet/driver/trip records
-- document storage/records
-- existing audit history
-- public website routing
-
-No MRCIP migration may rename, replace or destructively repurpose these entities without an explicit compatibility migration and regression test.
-
-## 7. Hosted migration history
-
-The repository migration manifest records these applied hosted migrations:
-
-1. `20260803202920` — `mkhonto_hub_phase_4_foundation`
-2. `20260803203051` — `mkhonto_hub_fk_indexes`
-3. `20260805191833` — `auth_access_and_protected_route_foundation`
-4. `20260805191850` — `restrict_auth_rpc_execution`
-
-The manifest explicitly warns that the original SQL migration files must be recovered from the hosted project before new schema changes are committed.
-
-Classification: **BLOCKED / REQUIRES SCHEMA RECOVERY**
-
-## 8. Current schema-recovery blocker
-
-Attempts to:
-
-- list database tables with full metadata;
-- execute read-only SQL; and
-- generate TypeScript database types
-
-currently fail with database password authentication errors for the Supabase database roles used by the connected tooling.
-
-The hosted project itself remains healthy and Supabase service logs are available, so this is a tooling/database credential problem rather than evidence that production is down.
-
-Required remediation before Stage 1 DDL:
-
-1. restore valid `SUPABASE_DB_PASSWORD` access for the repository/workflow tooling;
-2. ensure `SUPABASE_ACCESS_TOKEN` is available to the recovery workflow;
-3. run the existing hosted-schema recovery workflow/script;
-4. review recovered migration SQL;
-5. regenerate `src/types/database.types.ts`;
-6. run security/performance advisors;
-7. only then create the MRCIP Stage 1 migration.
-
-Until this is complete, **do not run a fresh baseline, destructive push, or manually invent a replacement migration history**.
-
-## 9. Current security findings
-
-Supabase Security Advisor currently reports warnings requiring review before MRCIP increases the platform's sensitive-data footprint:
-
-### SECURITY DEFINER RPC exposure
-
-The following authenticated-callable functions are currently `SECURITY DEFINER`:
-
-- `public.can_access_portal(p_portal text, p_organisation_id uuid)`
-- `public.complete_organisation_onboarding(p_name text, p_trading_name text, p_industry text)`
-- `public.get_my_access()`
-
-These may be intentional, but their bodies, search paths, grants and caller validation must be reviewed during schema recovery before MRCIP relies on them for protected commodity intelligence.
-
-Status: **REVIEW REQUIRED — DO NOT CHANGE BLINDLY**
-
-### Leaked password protection
-
-Supabase Auth leaked-password protection is currently disabled.
-
-Status: **SECURITY HARDENING RECOMMENDED**
-
-### Auth deprecation notices
-
-Recent Auth logs contain deprecation notices for unsupported GoTrue group-name environment settings.
-
-Status: **CONFIGURATION REVIEW REQUIRED**
-
-## 10. Performance findings
-
-The performance advisor reports numerous currently-unused indexes, including indexes on organisations, clients, finance, freight, trips and audit tables, plus one duplicate-index warning on `organisation_memberships`.
-
-These findings do not justify deleting indexes during MRCIP work. The application is still evolving and index usage must be evaluated against real workloads before removal.
-
-Status: **OBSERVE / DO NOT OPTIMISE PREMATURELY**
-
-## 11. MRCIP gap analysis
-
-The following major MRCIP domains are not verified as existing in the current database and should be treated as **NOT IMPLEMENTED until schema recovery proves otherwise**:
-
-- counterparty multi-role model
-- commodity master
-- commodity products
-- structured commodity specifications
-- mines/operations intelligence
-- laboratories and laboratory capabilities
-- buyer requirements
-- seller/supply offers
-- research sources and provenance
-- verification history
-- buyer/seller match engine
-- opportunity/deal-room records
-- protected introductions
-- KYC/KYB transaction profiles
-- mandate register
-- facilitator chain
-- commission schedules for commodity opportunities
-- sample/inspection/test requests
-- laboratory certificates linked to specifications
-- commodity outreach CRM
-- watchlists
-- intelligence quality scoring
-- opportunity/risk scoring
-- MRCIP executive dashboard
-- MRCIP map intelligence
-- AI intelligence retrieval layer
-
-## 12. Recommended Stage 1 data architecture
-
-This architecture is provisional until the recovered schema confirms exact column names and relationships.
-
-### Canonical identity
-
-Prefer extending or linking the existing `organisations` table rather than creating a second disconnected company master.
-
-Recommended new relational concepts:
-
-- `organisation_roles` or `counterparty_roles`
-- `organisation_contacts` if no reusable contact table already exists
-- `organisation_addresses` if no reusable address structure exists
-- `organisation_relationships`
-- `commodities`
-- `commodity_products`
-- `commodity_spec_templates`
-- `commodity_spec_fields`
-- `organisation_commodities`
-- `operations` / `mines`
-- `operation_products`
-- `research_sources`
-- `verification_records`
-
-### Transaction intelligence
-
-Later-stage entities:
-
-- `buyer_requirements`
-- `seller_offers`
-- `matches`
-- `commodity_opportunities`
-- `introductions`
-- `kyc_records`
-- `mandates`
-- `facilitator_chain`
-- `commission_schedules`
-- `test_requests`
-- `certificates`
-- `communications`
-- `tasks`
-- `watchlists`
-
-### Integration links
-
-MRCIP records should link, not copy, existing:
-
-- finance documents;
-- freight analyses;
-- clients;
-- documents;
-- negotiations;
+- Supabase Auth/session handling;
+- role-aware protected routes;
+- Admin/Finance/Freight access;
+- customer/client records;
+- quotations/invoices;
+- quantity × rate and fixed-amount semantics;
+- VAT exclusive/VAT/inclusive arithmetic;
+- quote-to-invoice relationships;
 - payments;
-- vehicles/drivers/trips where execution requires logistics.
+- freight profitability calculations;
+- drivers/vehicles/trips;
+- documents/storage;
+- existing audit history.
 
-## 13. RLS/RBAC architecture direction
+MRCIP stages integrate Finance, Freight, Negotiation and Documents by reference and do not duplicate their arithmetic or execution semantics.
 
-MRCIP must be organisation/tenant-aware and must enforce protected-data access server-side.
+## 6. Canonical identity conclusion
 
-Required access layers:
+A significant Phase 0 architectural conclusion was refined during Stage 1:
 
-1. table privileges / Data API grants;
+- `organisations` is the tenant/account organisation model;
+- market counterparties use a separate canonical `counterparties` master scoped by `organisation_id`;
+- a counterparty may carry multiple business roles;
+- formal customer relationships may link to existing `clients` rather than duplicating Finance customers.
+
+Core principle:
+
+**One company, one canonical market identity, multiple business roles.**
+
+## 7. MRCIP domains implemented after Phase 0
+
+The domains listed as unverified/not implemented in the initial audit were subsequently built in controlled stages. The live database/control foundation now includes:
+
+- counterparty multi-role master;
+- commodity/product/specification taxonomy;
+- provenance and verification records;
+- mines and protected mine details;
+- laboratories and capabilities;
+- import staging and duplicate review;
+- buyer requirements and seller supply offers;
+- deterministic explainable matching;
+- opportunities/Deal Room;
+- KYC/mandate/protection/disclosure protocol;
+- facilitator chains and commission controls;
+- commission settlement/reconciliation;
+- sampling, chain-of-custody, laboratory results/certificates and inspection evidence;
+- CRM DNC/outreach/task/watchlist foundations;
+- quality/risk/opportunity readiness scoring;
+- deterministic reports/signals and authorised retrieval;
+- governed AI requests/frozen context/citations/human review;
+- prompt/provider/execution gateway governance;
+- Stage 13 AI evaluation, safety calibration, rate/budget and provider-onboarding controls.
+
+Stage-level evidence is retained in `docs/mrcip/STAGE_N_IMPLEMENTATION_AUDIT.md` and `docs/mrcip/IMPLEMENTATION_REGISTER.md`.
+
+## 8. Security architecture retained from Phase 0
+
+MRCIP security continues to enforce multiple layers:
+
+1. explicit table/Data API privileges;
 2. RLS policies;
-3. application/server authorization;
-4. field/redaction strategy for protected sources;
-5. export/report authorization;
-6. audit events for protected information access.
+3. application/server authorisation;
+4. protected-data separation/redaction;
+5. export/report/retrieval authorisation;
+6. audit trails for sensitive access and workflow changes.
 
-Protected source details, KYC documents, pricing, banking information and commission data must never rely on UI-only hiding.
+Protected source details, KYC data, pricing, banking, commission/facilitator data and sensitive coordinates must never rely on UI-only hiding.
 
-Current Supabase platform behaviour also requires migrations to use explicit table grants where Data API exposure is intended; RLS remains a separate control layer.
+The disclosure protocol remains:
 
-## 14. Seed-data status
+**PROTECT → VERIFY → DISCLOSE → CONTRACT**
 
-The currently searchable Mkhonto file library contains related commodity intelligence datasets including:
+and protected seller identity may remain:
 
-- global buyers/offtakers database;
-- commodity sellers database;
-- detailed mine contacts database.
+**PROTECTED SELLER — WITHHELD PENDING PROTOCOL COMPLETION**
 
-The exact consolidated workbook named in the implementation prompt has not yet been located through the connected file-library search in this audit session. No import should claim completion until that source workbook is available and its sheets are inspected.
+## 9. Retrospective ACL defect and remediation
 
-Related data should therefore be treated as **SEED INTELLIGENCE / NOT AUTOMATICALLY VERIFIED**.
+The 23 August 2026 cross-stage audit identified a material security defect that earlier Stage 1–2 sign-offs had missed: 19 early MRCIP tables still inherited excessive default ACLs. `anon` retained direct table privileges and `authenticated` retained dangerous privileges including `TRUNCATE`, `REFERENCES` and `TRIGGER`.
 
-## 15. Workbook import architecture
+Because RLS does not protect `TRUNCATE`, this was treated as a genuine security regression rather than a documentation issue.
 
-The importer should use a staging workflow:
+Remediation migration:
 
-`UPLOAD -> PARSE -> MAP -> NORMALISE -> VALIDATE -> DUPLICATE REVIEW -> PREVIEW -> APPROVE -> IMPORT -> AUDIT`
+`20260823081757_mrcip_retrospective_acl_hardening_stages_1_13`
 
-Required staging controls:
+Hosted/GitHub Git blob SHA:
 
-- original filename;
-- sheet name;
-- row number/source reference;
-- original source URL;
-- original verification status;
-- import batch ID;
-- parse/validation errors;
-- duplicate candidates;
-- user approval;
-- final record IDs;
-- rollback/failed-row handling.
+`41b1d561798ca48b1cee68db22692bce934b860e`
 
-No import may silently overwrite canonical organisations.
+Post-remediation verification:
 
-## 16. Phase 1 implementation gate
+- MRCIP public tables audited: **86**
+- MRCIP tables with `anon` privileges: **0**
+- MRCIP tables where `authenticated` retains `TRUNCATE`, `REFERENCES` or `TRIGGER`: **0**
+- MRCIP public tables without RLS: **0**
+- unvalidated public constraints: **0**
 
-### Can proceed now
+The original Stage 1–2 sign-offs are therefore considered valid only **after this retrospective remediation**; they must not be used as evidence that the ACL defect never existed.
 
-- current-state architecture documentation;
-- implementation register;
-- workbook-to-domain mapping design;
-- RLS/RBAC design;
-- Stage 1 migration design review;
-- source-data normalization rules;
-- UI/navigation specification.
+## 10. Performance posture
 
-### Cannot safely apply yet
+The current performance advisor reports many unused-index informational notices, which are expected on an implementation with little/no production MRCIP traffic, plus the pre-existing duplicate `organisation_memberships` index warning.
 
-- production MRCIP DDL;
-- new production tables;
-- RLS migration changes;
-- destructive schema refactors;
-- data import into production tables.
+No index should be removed simply because it is currently unused. Production workload evidence is required before pruning.
 
-Reason: authoritative hosted migration SQL and database types have not yet been recovered.
+No new missing-FK-index regression was identified in the Stage 13 close-out audit.
 
-## 17. Stage 1 recommendation
+## 11. Seed-data / import status
 
-Once schema recovery succeeds, Stage 1 should be implemented in this order:
+The exact consolidated workbook intended as the authoritative MRCIP seed source remains unresolved. Related buyers/offtakers, sellers and mine-contact workbooks have been identified historically, but they must not be silently merged and represented as the authoritative consolidated dataset.
 
-1. confirm whether `organisations` is the canonical Counterparty Master;
-2. extend multi-role organisation classification without duplicating companies;
-3. add commodity/product/specification foundation;
-4. add source-provenance and verification primitives;
-5. add mines/operations and laboratory foundations;
-6. add RLS and explicit API grants;
-7. add indexes and constraints;
-8. generate TypeScript types;
-9. test cross-tenant access and protected-data denial;
-10. run security/performance advisors;
-11. import a small controlled seed batch;
-12. audit and remediate before expanding the import.
+Import remains governed by:
 
-Phase 1 is not signed off until the migration is recoverable, tested and regression-safe.
+**UPLOAD → PARSE/MAP → NORMALISE → VALIDATE → DUPLICATE REVIEW → PREVIEW → APPROVE → IMPORT → AUDIT**
+
+No import may silently overwrite canonical master records.
+
+## 12. Phase 0 gate outcome
+
+The original Phase 0 gate required schema recovery before production MRCIP DDL. That gate was satisfied, and Stages 1–13 were subsequently implemented under the controlled migration/audit process.
+
+Current programme status is not “Phase 0 blocked.” It is:
+
+- **Phase 0: CLOSED**
+- **Stages 1–12: verified complete at documented database/security/control boundaries after retrospective ACL remediation**
+- **Stage 13 live database/runtime/security: implemented and verified**
+- **Stage 13 source-control provenance: conditional/open for two missing SQL files**
+
+The two unresolved Stage 13 source-control files are:
+
+- `20260821060927_mrcip_stage_13c_evaluation_workflow_engine.sql` — expected Git blob SHA `4bafdf0acbee619e4949bd21ab7b6eb5a49f3635`
+- `20260821061049_mrcip_stage_13d_provider_onboarding_budget_and_activation_gates.sql` — expected Git blob SHA `3e986530652939cd381d1c337e548c14f50bb9eb`
+
+Their hosted SQL bodies remain authoritative. A non-matching reconstruction must be rejected rather than committed.
+
+## 13. Current gate before further stages
+
+The preferred next action is to recover those two migration files exactly and close the Stage 13 provenance exception.
+
+Until then:
+
+- the live Stage 13 database/runtime controls remain usable as implemented;
+- production AI provider activation remains disabled/unconfigured;
+- no claim of full Stage 13 governance sign-off should be made;
+- no full Admin browser/UI sign-off should be made because the complete frontend source is not present;
+- Stage 14 should not be formally signed off over the provenance gap unless an authorised maintainer explicitly accepts the documented exception.
+
+Phase 0 itself is closed; the remaining blocker is a **Stage 13 source-control provenance issue**, not a schema-connectivity blocker.
