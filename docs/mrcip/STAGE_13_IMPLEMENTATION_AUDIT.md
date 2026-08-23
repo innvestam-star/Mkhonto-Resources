@@ -76,7 +76,7 @@ Security boundaries remain:
 
 The main `mrcip-ai-gateway` remains the controlled Stage 12/13 execution surface. The superseded `mrcip-ai-eval-gateway` remains a JWT-verified HTTP 410 decommissioned stub.
 
-The temporary `mrcip-stage13-export` provenance exporter is also now a JWT-verified HTTP 410 decommissioned stub and can no longer return migration content.
+The temporary `mrcip-stage13-export` provenance exporter is now also a JWT-verified HTTP 410 decommissioned stub and can no longer return migration content.
 
 No production AI provider is activated or credentialed. No production evaluation, rate-card, budget-policy or provider-onboarding record is being represented as live merely because the control-plane schema exists.
 
