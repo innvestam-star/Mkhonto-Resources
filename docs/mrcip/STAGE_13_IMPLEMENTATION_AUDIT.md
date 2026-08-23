@@ -8,7 +8,7 @@
 
 This audit verifies the actual Stage 13 implementation in the hosted Supabase project and the corresponding source-controlled artifacts on branch `mrcip/phase-0-audit`. It incorporates the programme-wide retrospective ACL remediation and the completed recovery of the two Stage 13 migration sources that were previously absent from GitHub.
 
-Stage 13 is now fully reconciled at the database, security and migration-provenance boundaries. This does **not** activate a production AI provider and does **not** claim browser/Admin UI regression because the connected repository still does not contain the complete frontend application source.
+Stage 13 is fully reconciled at the database, security and migration-provenance boundaries. This does **not** activate a production AI provider and does **not** claim browser/Admin UI regression because the connected repository still does not contain the complete frontend application source.
 
 ## 2. Authoritative hosted migration chain
 
@@ -76,7 +76,7 @@ Security boundaries remain:
 
 The main `mrcip-ai-gateway` remains the controlled Stage 12/13 execution surface. The superseded `mrcip-ai-eval-gateway` remains a JWT-verified HTTP 410 decommissioned stub.
 
-The temporary `mrcip-stage13-export` provenance exporter is now also a JWT-verified HTTP 410 decommissioned stub and can no longer return migration content.
+The temporary `mrcip-stage13-export` provenance exporter is also a JWT-verified HTTP 410 decommissioned stub and can no longer return migration content.
 
 No production AI provider is activated or credentialed. No production evaluation, rate-card, budget-policy or provider-onboarding record is being represented as live merely because the control-plane schema exists.
 
