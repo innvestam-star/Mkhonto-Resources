@@ -4,9 +4,9 @@ The active hosted project is **Mkhonto Resources Hub** with project reference `z
 
 ## Authority and recovery status
 
-The hosted `supabase_migrations.schema_migrations` history is the authoritative migration record. The original migration-history recovery blocker is resolved, including the historical migrations that pre-date the reconstructed repository.
+The hosted `supabase_migrations.schema_migrations` history is the authoritative migration record. Historical recovery blockers are resolved, including migrations that pre-date the reconstructed repository.
 
-**Stage 13 provenance is fully reconciled.** All nine Stage 13 migrations now have exact source-controlled SQL counterparts. The previously missing 13c and 13d bodies were recovered directly from the hosted migration authority in commit `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec`, with `git hash-object` required to match the hosted Git blob SHAs before commit.
+Stage 13 provenance remains reconciled, and Stage 14 is now source-controlled through the final audit remediation migration `20260823212918_mrcip_stage_14h_fk_performance_hardening`.
 
 Do **not** replace this history with a fresh or manually invented baseline.
 
@@ -131,70 +131,105 @@ Do **not** replace this history with a fresh or manually invented baseline.
 
 - `20260823081757_mrcip_retrospective_acl_hardening_stages_1_13.sql`
 
-## Stage 13 hosted/source identity
+### Stage 14 — Governed AI release / runtime control / circuit breakers
 
-| Migration | Hosted Git blob SHA | Source-control status |
+- `20260823121520_mrcip_stage_14a_release_runtime_foundation.sql`
+- `20260823121824_mrcip_stage_14b_release_workflow_controls.sql`
+- `20260823122140_mrcip_stage_14c_runtime_gate_and_circuit_breakers.sql`
+- `20260823122438_mrcip_stage_14d_rls_grants_and_read_models.sql`
+- `20260823123311_mrcip_stage_14e_gateway_completion_context_hardening.sql`
+- `20260823124908_mrcip_stage_14f_control_write_token_hardening.sql`
+- `20260823130516_mrcip_stage_14g_statement_scoped_control_tokens.sql`
+- `20260823212918_mrcip_stage_14h_fk_performance_hardening.sql`
+
+### Explicitly excluded no-op history item
+
+`20260823125820_noop_probe` contained only `select 1;`, made no schema or business-data change, and was removed from the authoritative hosted migration history after it was accidentally registered during tooling. It is **not** a valid programme migration and must not be reintroduced.
+
+## Stage 13 hosted/source identity checkpoint
+
+| Migration | Git blob SHA | Source-control status |
 |---|---|---|
-| 13a | `a826b4214fe3af0c7c467d36e226cb055c2ea13f` | Exact GitHub match |
-| 13b | `43c931898a842065361bb6b549966e6d1624b9e0` | Exact GitHub match |
-| 13c | `4bafdf0acbee619e4949bd21ab7b6eb5a49f3635` | Exact GitHub match — recovered in `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec` |
-| 13d | `3e986530652939cd381d1c337e548c14f50bb9eb` | Exact GitHub match — recovered in `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec` |
-| 13e / `20260821061129` | `0d7e9f9dac1bf241a0ad2f0a24fc8a83bc569e4f` | Exact GitHub match |
-| 13e / `20260821061339` | `b7ac746901402e86face5c14070e46de190c5958` | Exact GitHub match |
-| 13f | `d69f4c436a16c1c8d55b68333c48b66bee33f4e8` | Exact GitHub match |
-| 13g | `0eed99b877945d44cdfc830b9401a770e763f7f8` | Exact GitHub match |
-| 13h | `7c5bc53b9bd685eb6a6bceacebec6494856e3572` | Exact GitHub match |
-| retrospective ACL hardening | `41b1d561798ca48b1cee68db22692bce934b860e` | Exact GitHub match |
+| 13a | `a826b4214fe3af0c7c467d36e226cb055c2ea13f` | Exact match previously verified |
+| 13b | `43c931898a842065361bb6b549966e6d1624b9e0` | Exact match previously verified |
+| 13c | `4bafdf0acbee619e4949bd21ab7b6eb5a49f3635` | Exact match previously verified; recovered in `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec` |
+| 13d | `3e986530652939cd381d1c337e548c14f50bb9eb` | Exact match previously verified; recovered in `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec` |
+| 13e / `20260821061129` | `0d7e9f9dac1bf241a0ad2f0a24fc8a83bc569e4f` | Exact match previously verified |
+| 13e / `20260821061339` | `b7ac746901402e86face5c14070e46de190c5958` | Exact match previously verified |
+| 13f | `d69f4c436a16c1c8d55b68333c48b66bee33f4e8` | Exact match previously verified |
+| 13g | `0eed99b877945d44cdfc830b9401a770e763f7f8` | Exact match previously verified |
+| 13h | `7c5bc53b9bd685eb6a6bceacebec6494856e3572` | Exact match previously verified |
+| retrospective ACL hardening | `41b1d561798ca48b1cee68db22692bce934b860e` | Exact match previously verified |
 
-**Stage 13 migration provenance: 9/9 exact — SIGNED OFF.**
+**Stage 13 provenance remains closed.**
 
-## Stage 13 recovery and cleanup evidence
+## Stage 14 source-control checkpoint
 
-The missing 13c and 13d SQL files were recovered through a short-lived, tightly scoped export path from the hosted migration table. The recovery path required exact final Git blob verification before source-control commit.
+| Migration | GitHub blob SHA | Status |
+|---|---|---|
+| 14a | `adc6e2450aabf3b24b48e698161dc3919435e418` | Source-controlled |
+| 14b | `b0f5abbfee1ac297a62f79b30e07a2e50a1f4869` | Source-controlled |
+| 14c | `cd681c2146cc9717a64751ea1bbe045c30e940ba` | Source-controlled |
+| 14d | `a3f5ead66ae4d1d4a75fb66f82f09463cb00f333` | Source-controlled |
+| 14e | `ecd14282bad6d88c9ff489ed8dda6bdf434fbf0b` | Source-controlled |
+| 14f | `17f8ad0f60e66dd351d0fa99eb8bc6b42779564e` | Source-controlled |
+| 14g | `a3ad57eca044a3060cecaaba830ccd4d959625bc` | Source-controlled |
+| 14h | `afa1546c5f29d736415f0d0b835622b1af34c45b` | Source-controlled; final audit remediation |
 
-After successful recovery:
+The hosted migration versions and names were re-read after 14h and match this Stage 14 chain. No replacement baseline was created.
 
-- the one-time GitHub recovery workflow removed itself;
-- the temporary privileged export RPC was dropped from the database;
-- generated TypeScript types no longer expose that temporary RPC;
-- the temporary `mrcip-stage13-export` Edge Function was redeployed as a JWT-verified HTTP 410 decommissioned stub;
-- no production business data was changed by source recovery;
-- the production AI provider remained disabled/unconfigured.
+## Stage 14 verification checkpoint
 
-## Programme verification checkpoint
-
-- Hosted migration/schema operations remain healthy.
-- TypeScript database type generation succeeds after Stage 13 cleanup.
-- Stage 3 matching remains **99.80/100 candidate** and **50.00/100 disqualified** for the documented regression fixtures.
-- Stage 4 retains **PROTECT → VERIFY → DISCLOSE → CONTRACT** as the protected disclosure gate.
-- Stages 5–12 remain within their previously signed-off database/security/integration boundaries.
-- Programme ACL remediation remains authoritative at **86 MRCIP public tables / 0 anon-exposed / 0 authenticated dangerous-grant tables**.
-- No Stage 13 provenance cleanup redefined Finance, quotation/invoice/VAT, Payments, Freight, Negotiation, logistics or Auth behavior.
-- Security Advisor still reports only the three pre-existing Auth `SECURITY DEFINER` warnings plus disabled leaked-password protection.
-- Performance Advisor continues to show mostly unused-index information plus the pre-existing duplicate `organisation_memberships` index warning; no new Stage 13 provenance-related missing-FK-index defect was introduced.
+- Final Stage 14 rollback regression: **14/14 PASS**.
+- Zero fixture residue after rollback.
+- No real provider request was made during sign-off.
+- `mrcip-ai-gateway` is deployed as **version 3**, **ACTIVE**, with JWT verification enabled.
+- Start-time Stage 14 rejection is recorded as `blocked / STAGE14_START_REJECTED` before provider request.
+- Direct release/runtime/event DML is blocked; controlled workflow RPCs are required.
+- Stage 14g closes cross-statement internal-token replay while preserving legitimate UPSERT trigger phases.
+- Protected execution cannot exceed approved release scope/roles/limits.
+- Emergency stop blocks new executions.
+- Stage 13 budget breach can automatically pause Stage 14 runtime.
+- Execution→release provenance is retained in `mrcip_ai_execution_release_links`.
+- RLS hides Stage 14 records from unauthorized/unassigned users.
+- Security Advisor reports no new Stage 14 warning; only the same three pre-existing Auth `SECURITY DEFINER` warnings plus leaked-password protection disabled.
+- Initial Performance Advisor review found eight Stage 14 unindexed-FK informational findings; 14h remediated all eight and the rerun cleared them.
+- Remaining performance output is chiefly expected unused-index information on new/empty structures plus the pre-existing duplicate `organisation_memberships` index warning.
+- TypeScript database type generation succeeds and contains Stage 14 tables/views/RPCs.
+- Finance, quotation/invoice/VAT, Payments, Freight, Negotiation, logistics and Auth behavior were not redefined by Stage 14.
 - Full Admin browser/UI regression remains unclaimed because the complete application source is not present in the connected repository.
+- Production AI provider execution remains **DISABLED / UNCONFIGURED**. Stage 14 sign-off is not provider go-live approval.
 
 ## Ongoing migration-control rules
 
-1. The hosted migration history remains authoritative; never invent a replacement baseline.
-2. Every future DDL change must have an exact source-controlled migration using the hosted version and body.
-3. A migration is not reconciled until its Git blob SHA matches the hosted migration body.
-4. Run security and performance advisors after structural database changes.
+1. Hosted migration history remains authoritative; never invent a replacement baseline.
+2. Every future DDL change must have a source-controlled migration using the hosted version/name/body.
+3. Reconcile migration provenance before stage sign-off; preserve exact hosted/source identity evidence where available.
+4. Run security and performance advisors after structural database changes and remediate new material findings before sign-off.
 5. Regenerate TypeScript database types after schema changes when application source is synchronized.
-6. Preserve existing Finance, Freight and Auth behavior unless a separately scoped regression-tested remediation requires change.
+6. Preserve existing Finance, Freight and Auth behavior unless a separately scoped, regression-tested remediation requires change.
 7. Intelligence imports must use staging, validation and duplicate review; never silently overwrite canonical records.
-8. Matching must remain explainable and auditable; hard filters, score components, failed mandatory fields and human decisions are retained.
+8. Matching must remain explainable and auditable; retain hard filters, score components, failed mandatory fields and human decisions.
 9. Do not duplicate Finance or Freight arithmetic inside MRCIP; integrate by reference.
 10. Protected seller/source disclosure must remain governed by **PROTECT → VERIFY → DISCLOSE → CONTRACT**.
 11. Protected Deal Room documents, contacts, coordinates, pricing, banking, KYC and commission data retain restrictive server-side authorization.
 12. Approved facilitator, commission, settlement, custody, laboratory, CRM, scoring, report, retrieval and AI histories are controlled audit records; corrections use explicit revision/reversal workflows.
-13. Stage 11–13 AI controls do not authorise autonomous outreach, source disclosure, negotiation, contracting, trading, payment execution or Finance/Freight mutation.
+13. Stage 11–14 AI controls do not authorise autonomous outreach, source disclosure, negotiation, contracting, trading, payment execution or Finance/Freight mutation.
 14. AI provider secrets must remain outside MRCIP tables in an approved external secret mechanism.
-15. No provider/model may be represented as production-active without completed evaluated onboarding, credentials, rates/budget approval and the applicable go-live decision.
-16. Production AI provider execution is currently **DISABLED / UNCONFIGURED**.
+15. No provider/model may be represented as production-active without evaluated onboarding, approved rates/budget, an approved production release and an explicit go-live decision.
+16. Stage 14 runtime must fail closed unless the applicable release plan is approved and active for the matching provider/prompt/scope.
+17. Pilot and production runtime states must match the active release scope; production promotion must satisfy required evidence and human-review gates.
+18. Protected AI execution must not exceed the release plan's protected-data approval, permitted role set or protected-execution limit.
+19. `mrcip_ai_execution_release_links` is audit provenance and must not be silently rewritten to attach an execution to a different release.
+20. Emergency stop and automatic pause circuit breakers must remain effective before provider request.
+21. Release/runtime/event control tables may not be mutated by arbitrary direct DML; controlled workflow paths and statement-scoped guard tokens must be retained.
+22. A Stage 14 start rejection after execution preparation must be converted to an auditable terminal blocked execution, not left stranded and not sent to the provider.
+23. Production AI provider execution is currently **DISABLED / UNCONFIGURED**.
 
 ## Current checkpoint
 
-**Stages 0–13 are signed off at their documented database/security/commercial-control boundaries. Stage 13 migration provenance is fully reconciled.**
+**Stages 0–14 are signed off at their documented database/security/commercial-control boundaries. Stage 13 provenance remains closed and Stage 14 release/runtime controls are formally signed off after audit remediation.**
 
-**Stage 14 is the next controlled schema/implementation stage and must begin from this chain without rewriting history.**
+The next controlled stage must begin from this chain without rewriting history and must continue:
+
+**IMPLEMENT → TEST → AUDIT → REMEDIATE → SIGN OFF → PROCEED**.
