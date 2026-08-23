@@ -1,0 +1,3 @@
+create index mrcip_ai_context_items_retrieval_cover_idx on public.mrcip_ai_context_items(organisation_id,retrieval_request_id);
+create index mrcip_ai_requests_requested_by_cover_idx on public.mrcip_ai_requests(requested_by);
+create index mrcip_ai_reviews_reviewer_cover_idx on public.mrcip_ai_reviews(reviewer_id);

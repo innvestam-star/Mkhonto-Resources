@@ -1,0 +1,5 @@
+create index mrcip_report_definitions_owner_user_cover_idx on public.mrcip_report_definitions(owner_user_id);
+create index mrcip_report_definitions_created_by_idx on public.mrcip_report_definitions(created_by);
+create index mrcip_report_definitions_updated_by_idx on public.mrcip_report_definitions(updated_by);
+create index mrcip_retrieval_requests_requested_by_idx on public.mrcip_retrieval_requests(requested_by);
+create index mrcip_watchlist_signal_snapshots_item_cover_idx on public.mrcip_watchlist_signal_snapshots(organisation_id,watchlist_item_id,generated_at desc);
