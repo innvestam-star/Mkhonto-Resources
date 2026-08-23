@@ -1,5 +1,6 @@
 name: Reconcile Stage 13 sign-off records
 
+# Existing-workflow trigger for the controlled Stage 13 close-out.
 on:
   push:
     branches:
