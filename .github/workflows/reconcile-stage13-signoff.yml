@@ -1,0 +1,121 @@
+name: Reconcile Stage 13 sign-off records
+
+on:
+  push:
+    branches:
+      - mrcip/phase-0-audit
+    paths:
+      - .github/workflows/reconcile-stage13-signoff.yml
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    if: github.event.head_commit.message != 'docs: reconcile Stage 13 full sign-off'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: mrcip/phase-0-audit
+
+      - name: Reconcile manifest and implementation register
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          def replace_exact(text, old, new, label):
+              if old not in text:
+                  raise SystemExit(f"missing expected text: {label}")
+              return text.replace(old, new)
+
+          manifest_path = Path('supabase/migrations/MIGRATION_MANIFEST.md')
+          m = manifest_path.read_text()
+          m = replace_exact(m,
+              "The historical pre-repository migrations were recovered and committed. Stage 13 has one remaining provenance exception: the hosted 13c and 13d SQL bodies exist and are authoritative, but their exact SQL files are not present in GitHub. Do not fabricate or hand-reconstruct them. They may only be restored when the resulting Git blob SHA exactly matches the hosted authority recorded below.",
+              "The historical pre-repository migrations were recovered and committed. Stage 13 migration provenance is now fully reconciled: all nine Stage 13 SQL files are present in GitHub and byte-identical to the authoritative hosted migration bodies. The previously missing 13c and 13d files were recovered in commit `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec` only after exact `git hash-object` verification against hosted Supabase.",
+              'manifest recovery status')
+          m = replace_exact(m,
+              "| `20260821060927` | `mrcip_stage_13c_evaluation_workflow_engine` | **Applied; GitHub SQL file missing — hosted body authoritative** |",
+              "| `20260821060927` | `mrcip_stage_13c_evaluation_workflow_engine` | Applied; exact GitHub match verified |",
+              'manifest 13c row')
+          m = replace_exact(m,
+              "| `20260821061049` | `mrcip_stage_13d_provider_onboarding_budget_and_activation_gates` | **Applied; GitHub SQL file missing — hosted body authoritative** |",
+              "| `20260821061049` | `mrcip_stage_13d_provider_onboarding_budget_and_activation_gates` | Applied; exact GitHub match verified |",
+              'manifest 13d row')
+          m = replace_exact(m,
+              "| 13c | `4bafdf0acbee619e4949bd21ab7b6eb5a49f3635` | **Source file recovery open** |",
+              "| 13c | `4bafdf0acbee619e4949bd21ab7b6eb5a49f3635` | GitHub exact match |",
+              'manifest 13c hash')
+          m = replace_exact(m,
+              "| 13d | `3e986530652939cd381d1c337e548c14f50bb9eb` | **Source file recovery open** |",
+              "| 13d | `3e986530652939cd381d1c337e548c14f50bb9eb` | GitHub exact match |",
+              'manifest 13d hash')
+          m = replace_exact(m,
+              "- Exact hosted migration files are source-controlled through Stage 12.\n- Seven of nine Stage 13 migration files are source-controlled and byte-identical to hosted SQL; 13c/13d are the only provenance exceptions.",
+              "- Exact hosted migration files are source-controlled through Stage 13.\n- All nine Stage 13 migration files are source-controlled and byte-identical to hosted SQL. The recovered 13c/13d files were committed only after exact hosted Git blob verification in recovery commit `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec`.\n- The short-lived Stage 13 provenance exporter was decommissioned to a JWT-verified HTTP 410 stub and its temporary privileged export RPC was dropped after recovery.",
+              'manifest verification bullets')
+          manifest_path.write_text(m)
+
+          reg_path = Path('docs/mrcip/IMPLEMENTATION_REGISTER.md')
+          r = reg_path.read_text()
+          r = replace_exact(r,
+              "> **23 August 2026 retrospective checkpoint:** the live database/runtime implementation has been verified through Stage 13. A legacy ACL defect affecting 19 early Stage 1–2 tables was discovered and remediated by `20260823081757_mrcip_retrospective_acl_hardening_stages_1_13`. Post-fix result: **86 MRCIP tables / 0 anon-exposed tables / 0 authenticated tables retaining TRUNCATE, REFERENCES or TRIGGER**. Stage 13 remains under **conditional sign-off** because hosted migrations 13c and 13d do not yet have exact GitHub SQL-file counterparts.",
+              "> **23 August 2026 Stage 13 close-out:** the live database/runtime implementation and source-control provenance are verified through Stage 13. The legacy ACL defect affecting 19 early Stage 1–2 tables remains remediated by `20260823081757_mrcip_retrospective_acl_hardening_stages_1_13`, with authoritative post-fix result **86 MRCIP tables / 0 anon-exposed tables / 0 authenticated tables retaining TRUNCATE, REFERENCES or TRIGGER**. All **9/9 Stage 13 migrations** are now exact GitHub ↔ hosted Supabase matches. Production AI provider execution remains deliberately disabled/unconfigured.",
+              'register checkpoint')
+          r = replace_exact(r,
+              "| Migration history recovery / source control | PARTIALLY RECONCILED | `supabase/migrations/`, hosted `schema_migrations` | Hosted chain authoritative | All DB stages | Exact hosted versions verified through Stage 12; 7/9 Stage 13 files byte-identical | **Stage 13c/13d GitHub SQL files absent** | Restore only from exact hosted authority matching recorded blob SHAs | **CONDITIONAL** |",
+              "| Migration history recovery / source control | LIVE / RECONCILED | `supabase/migrations/`, hosted `schema_migrations` | Hosted chain authoritative | All DB stages | Exact hosted versions verified through Stage 13; **9/9 Stage 13 files byte-identical** | None | Preserve exact hosted-version/blob verification for every migration | **SIGNED OFF** |",
+              'register migration recovery row')
+          replacements = {
+          "| Stage 13 — Evaluation suite/case foundation | LIVE | eval suites/cases | Synthetic safety/evaluation corpus | Stage 12 gateway/provider | Live schema + generated types verified | No production evaluation data retained | Controlled synthetic fixtures only | **CONDITIONAL SIGN-OFF** |":
+          "| Stage 13 — Evaluation suite/case foundation | LIVE | eval suites/cases | Synthetic safety/evaluation corpus | Stage 12 gateway/provider | Live schema + generated types verified | No production evaluation data retained | Controlled synthetic fixtures only | **SIGNED OFF** |",
+          "| Stage 13 — Evaluation run/attempt/result engine | LIVE | eval run/attempt/result tables + workflow RPCs | Versioned evaluation history | Provider/prompt evaluation | RPC surface, service boundaries and types verified | **13c migration SQL absent from GitHub** | Hosted SQL/body remains authority; exact recovery only | **CONDITIONAL** |":
+          "| Stage 13 — Evaluation run/attempt/result engine | LIVE | eval run/attempt/result tables + workflow RPCs | Versioned evaluation history | Provider/prompt evaluation | RPC surface, service boundaries, types and exact 13c migration verified | None | Retain exact source and controlled workflow | **SIGNED OFF** |",
+          "| Stage 13 — Provider rates / commercial control | LIVE FOUNDATION | `mrcip_ai_provider_rates` | Versioned rate cards | Cost/evaluation/runtime | Schema/types verified; no active production rate rows | Production rates unconfigured | Executive-controlled activation | **CONDITIONAL SIGN-OFF** |":
+          "| Stage 13 — Provider rates / commercial control | LIVE FOUNDATION | `mrcip_ai_provider_rates` | Versioned rate cards | Cost/evaluation/runtime | Schema/types and exact migrations verified; no active production rate rows | Production rates unconfigured | Executive-controlled activation | **SIGNED OFF for foundation** |",
+          "| Stage 13 — Budget policies | LIVE FOUNDATION | `mrcip_ai_budget_policies` | Governed spend limits | Gateway/provider | Schema/types verified; zero production policy rows | Production budgets unconfigured | Approved policy required before go-live | **CONDITIONAL SIGN-OFF** |":
+          "| Stage 13 — Budget policies | LIVE FOUNDATION | `mrcip_ai_budget_policies` | Governed spend limits | Gateway/provider | Schema/types and exact migrations verified; zero production policy rows | Production budgets unconfigured | Approved policy required before go-live | **SIGNED OFF for foundation** |",
+          "| Stage 13 — Production provider onboarding | LIVE GATE / PROVIDER DISABLED | `mrcip_ai_provider_onboarding` + approval/revocation RPCs | Production activation gate | Stage 11/12/13 | No production provider/onboarding rows; activation remains off | **13d migration SQL absent from GitHub** | Exact 13d provenance recovery; preserve fail-closed gate | **CONDITIONAL** |":
+          "| Stage 13 — Production provider onboarding | LIVE GATE / PROVIDER DISABLED | `mrcip_ai_provider_onboarding` + approval/revocation RPCs | Production activation gate | Stage 11/12/13 | Exact 13d verified; no production provider/onboarding rows; activation remains off | Provider intentionally unconfigured | Preserve fail-closed evaluated activation gate | **SIGNED OFF for gate** |",
+          "| Stage 13 — Migration provenance | PARTIALLY RECONCILED | hosted `schema_migrations` ↔ GitHub | Change-control evidence | Deployment/governance | 7/9 Stage 13 files exact; hashes recorded for all 9 | **13c and 13d source files missing** | Recover exact bytes matching hosted SHAs | **OPEN** |":
+          "| Stage 13 — Migration provenance | LIVE / RECONCILED | hosted `schema_migrations` ↔ GitHub | Change-control evidence | Deployment/governance | **9/9 Stage 13 files exact**; 13c/13d recovered in `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec` | None | Preserve exact-hash reconciliation rule | **SIGNED OFF** |",
+          "| Stage 13 — Implementation audit | LIVE | `docs/mrcip/STAGE_13_IMPLEMENTATION_AUDIT.md` | None | Governance | Current live audit, advisors, ACL, runtime, types, provenance matrix | Provenance exception remains | Close 13c/13d before full sign-off | **CONDITIONAL SIGN-OFF** |":
+          "| Stage 13 — Implementation audit | LIVE | `docs/mrcip/STAGE_13_IMPLEMENTATION_AUDIT.md` | None | Governance | Live audit, advisors, ACL, runtime, types and **9/9 migration provenance** recorded | None | Permanent checkpoint | **SIGNED OFF** |",
+          }
+          for old, new in replacements.items():
+              r = replace_exact(r, old, new, old[:60])
+
+          current_re = re.compile(r"## Current checkpoint\n\n.*", re.S)
+          if not current_re.search(r):
+              raise SystemExit('missing current checkpoint')
+          new_checkpoint = """## Current checkpoint
+
+**Stages 0–13 are signed off at their documented database/security/commercial-control boundaries.** The Stage 1–2 historical ACL defect is explicitly preserved in the audit record as remediated evidence rather than erased from history.
+
+**Stage 13 provenance is closed:** all nine Stage 13 migrations are byte-identical between GitHub and hosted Supabase. The previously missing 13c/13d files were recovered in commit `c8395610b35a59fab1dbd23c2ac9e1d19afb5bec` after exact Git blob verification.
+
+Production AI provider execution remains deliberately **DISABLED / UNCONFIGURED**. Stage 13 sign-off approves the evaluation, commercial-control and provider-onboarding gates; it does not constitute provider go-live approval.
+
+The complete Admin frontend source is still not present in the connected repository, so full browser/UI regression remains pending.
+
+**Recommended next controlled stage: Stage 14.**
+"""
+          r = current_re.sub(new_checkpoint, r)
+          reg_path.write_text(r)
+          PY
+
+      - name: Commit reconciliation and remove one-time workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/reconcile-stage13-signoff.yml
+          git add supabase/migrations/MIGRATION_MANIFEST.md docs/mrcip/IMPLEMENTATION_REGISTER.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs: reconcile Stage 13 full sign-off"
+          git push origin HEAD:mrcip/phase-0-audit
