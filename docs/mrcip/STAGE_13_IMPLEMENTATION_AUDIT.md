@@ -2,39 +2,46 @@
 
 **Stage:** 13 — AI Evaluation, Safety Calibration, Provider Commercial Controls & Production Onboarding  
 **Audit date:** 23 August 2026  
-**Status:** **CONDITIONAL SIGN-OFF — LIVE DATABASE/RUNTIME COMPLETE; SOURCE-CONTROL PROVENANCE REMEDIATION OPEN**
+**Status:** **SIGNED OFF — DATABASE / SECURITY / SOURCE-CONTROL PROVENANCE COMPLETE; PRODUCTION PROVIDER REMAINS DISABLED**
 
 ## 1. Scope
 
-This audit verifies the actual Stage 13 implementation in the hosted Supabase project and the corresponding source-controlled artifacts on branch `mrcip/phase-0-audit`. It also incorporates the programme-wide retrospective ACL audit completed after Stage 13.
+This audit verifies the actual Stage 13 implementation in the hosted Supabase project and the corresponding source-controlled artifacts on branch `mrcip/phase-0-audit`. It incorporates the programme-wide retrospective ACL remediation and the completed recovery of the two Stage 13 migration sources that were previously absent from GitHub.
 
-Stage 13 is not treated as fully signed off until every hosted migration has an exact source-controlled counterpart. The live implementation may be operationally complete while governance/provenance remains incomplete.
+Stage 13 is now fully reconciled at the database, security and migration-provenance boundaries. This does **not** activate a production AI provider and does **not** claim browser/Admin UI regression because the connected repository still does not contain the complete frontend application source.
 
 ## 2. Authoritative hosted migration chain
-
-The hosted migration history contains the following Stage 13 migrations:
 
 | Version | Migration | Hosted Git blob SHA | GitHub source status |
 | --- | --- | --- | --- |
 | 20260821060725 | `mrcip_stage_13a_ai_evaluation_foundation` | `a826b4214fe3af0c7c467d36e226cb055c2ea13f` | Present; exact match verified |
 | 20260821060752 | `mrcip_stage_13b_provider_commercial_and_onboarding_foundation` | `43c931898a842065361bb6b549966e6d1624b9e0` | Present; exact match verified |
-| 20260821060927 | `mrcip_stage_13c_evaluation_workflow_engine` | `4bafdf0acbee619e4949bd21ab7b6eb5a49f3635` | **Missing from GitHub; hosted body retained as authority** |
-| 20260821061049 | `mrcip_stage_13d_provider_onboarding_budget_and_activation_gates` | `3e986530652939cd381d1c337e548c14f50bb9eb` | **Missing from GitHub; hosted body retained as authority** |
+| 20260821060927 | `mrcip_stage_13c_evaluation_workflow_engine` | `4bafdf0acbee619e4949bd21ab7b6eb5a49f3635` | Present; exact match verified |
+| 20260821061049 | `mrcip_stage_13d_provider_onboarding_budget_and_activation_gates` | `3e986530652939cd381d1c337e548c14f50bb9eb` | Present; exact match verified |
 | 20260821061129 | `mrcip_stage_13e_rls_grants_and_read_models` | `0d7e9f9dac1bf241a0ad2f0a24fc8a83bc569e4f` | Present; exact match verified |
 | 20260821061339 | `mrcip_stage_13e_rls_read_models_and_drift_reconciliation` | `b7ac746901402e86face5c14070e46de190c5958` | Present; exact match verified |
 | 20260821061513 | `mrcip_stage_13f_onboarding_revocation_and_refusal_hardening` | `d69f4c436a16c1c8d55b68333c48b66bee33f4e8` | Present; exact match verified |
 | 20260821061623 | `mrcip_stage_13g_evaluation_gateway_payload_hardening` | `0eed99b877945d44cdfc830b9401a770e763f7f8` | Present; exact match verified |
 | 20260821061636 | `mrcip_stage_13h_eval_gateway_service_rpc_grants` | `7c5bc53b9bd685eb6a6bceacebec6494856e3572` | Present; exact match verified |
 
-### Provenance exception
+### Provenance close-out
 
-The exact hosted SQL bodies for 13c and 13d remain available in `supabase_migrations.schema_migrations`, but the corresponding SQL files were never committed to the feature branch. A reconstruction attempt for 13c produced a non-matching Git blob and was rejected; it was not attached to the branch. This is the correct control outcome: migration history must not be represented as exact when it is not byte-identical to the hosted authority.
+The authoritative 13c and 13d bodies were recovered directly from hosted `supabase_migrations.schema_migrations` through a short-lived authenticated export path. A one-time GitHub Actions workflow fetched the authoritative SQL and required `git hash-object` to match the hosted hashes before committing either file.
 
-**Required close-out action:** restore 13c and 13d only from an exact authoritative export whose Git blob hashes equal the values above.
+Recovery commit:
+
+`c8395610b35a59fab1dbd23c2ac9e1d19afb5bec`
+
+Verified recovered files:
+
+- `supabase/migrations/20260821060927_mrcip_stage_13c_evaluation_workflow_engine.sql` → `4bafdf0acbee619e4949bd21ab7b6eb5a49f3635`
+- `supabase/migrations/20260821061049_mrcip_stage_13d_provider_onboarding_budget_and_activation_gates.sql` → `3e986530652939cd381d1c337e548c14f50bb9eb`
+
+The one-time workflow removed itself after success. The temporary privileged export RPC was dropped. The temporary Edge exporter `mrcip-stage13-export` was redeployed as a JWT-verified HTTP 410 decommissioned stub. No production database records were changed by the source-recovery process.
 
 ## 3. Implemented Stage 13 data model
 
-Live schema/type generation confirms Stage 13 objects including:
+Live Stage 13 objects include:
 
 - `mrcip_ai_eval_suites`
 - `mrcip_ai_eval_cases`
@@ -52,49 +59,30 @@ Read models include:
 - `mrcip_ai_budget_usage_summary`
 - `mrcip_ai_provider_production_readiness`
 
-TypeScript type generation succeeded against the live project after the retrospective remediation.
+TypeScript database type generation succeeds after provenance cleanup and includes the Stage 13 evaluation, commercial-control, onboarding and workflow RPC surface. The temporary export RPC is absent from the live public type surface.
 
 ## 4. Controlled workflow / RPC verification
 
-Live function inspection confirms Stage 13 workflow functions including:
+Verified Stage 13 workflow functions include evaluation-suite approval, evaluation run/attempt preparation, service-role gateway attempt lifecycle, human evaluation review/finalisation, provider-rate approval, budget-policy approval and provider-onboarding approval/revocation controls.
 
-- `approve_mrcip_ai_eval_suite`
-- `prepare_mrcip_ai_eval_run`
-- `start_mrcip_ai_eval_run`
-- `prepare_mrcip_ai_eval_attempt`
-- `mrcip_ai_eval_gateway_start_attempt`
-- `mrcip_ai_eval_gateway_complete_attempt`
-- `mrcip_ai_eval_gateway_fail_attempt`
-- `review_mrcip_ai_eval_attempt`
-- `finalize_mrcip_ai_eval_run`
-- provider-rate approval controls
-- budget-policy approval controls
-- provider-onboarding preparation, approval and revocation controls
+Security boundaries remain:
 
-Security verification shows:
-
-- no MRCIP public RPC is `SECURITY DEFINER`;
-- no audited MRCIP RPC is executable by `anon`;
-- evaluation and execution gateway service RPCs are restricted to `service_role`;
-- public MRCIP workflow RPCs use invoker semantics and role checks rather than an exposed definer bypass.
+- no audited MRCIP public RPC is exposed to `anon`;
+- external/gateway lifecycle mutation remains service-role controlled;
+- public MRCIP workflow RPCs use invoker semantics and explicit role checks;
+- the temporary provenance export RPC has been removed.
 
 ## 5. Provider/runtime state
 
-The main `mrcip-ai-gateway` remains the Stage 12/13 execution surface. Evaluation execution is consolidated through the main gateway.
+The main `mrcip-ai-gateway` remains the controlled Stage 12/13 execution surface. The superseded `mrcip-ai-eval-gateway` remains a JWT-verified HTTP 410 decommissioned stub.
 
-The superseded `mrcip-ai-eval-gateway` is deployed as an HTTP 410 decommissioned stub with JWT verification enabled.
+The temporary `mrcip-stage13-export` provenance exporter is also now a JWT-verified HTTP 410 decommissioned stub and can no longer return migration content.
 
-A temporary reconciliation helper, `mrcip-stage13-reconcile-export`, was used only during provenance investigation and has been redeployed as an HTTP 410 decommissioned stub with JWT verification enabled. It does not expose migration content.
-
-No production AI provider has been activated. Current live counts for provider configurations, prompt/execution/evaluation/rate/budget/onboarding records were verified at zero during the retrospective audit; there is no synthetic Stage 13 test residue or accidental provider activation.
+No production AI provider is activated or credentialed. No production evaluation, rate-card, budget-policy or provider-onboarding record is being represented as live merely because the control-plane schema exists.
 
 ## 6. RLS, ACL and tenant-security verification
 
-All 86 MRCIP public tables are RLS-enabled.
-
-The retrospective audit discovered a legacy default-ACL defect on 19 early Stage 1–2 tables: `anon` still held direct privileges and `authenticated` retained dangerous privileges including `TRUNCATE`, `REFERENCES` and `TRIGGER`. Because RLS does not protect `TRUNCATE`, this was a material programme-wide security defect.
-
-It was remediated by hosted migration:
+The programme-wide retrospective audit identified a legacy default-ACL defect on 19 early Stage 1–2 MRCIP tables. That defect was remediated by:
 
 `20260823081757_mrcip_retrospective_acl_hardening_stages_1_13`
 
@@ -102,75 +90,74 @@ Hosted/source Git blob SHA:
 
 `41b1d561798ca48b1cee68db22692bce934b860e`
 
-Post-remediation verification:
+Authoritative post-remediation result:
 
-- MRCIP tables audited: **86**
+- MRCIP public tables audited: **86**
 - tables with `anon` privileges: **0**
 - tables where `authenticated` retains `TRUNCATE`, `REFERENCES` or `TRIGGER`: **0**
 - unvalidated public constraints: **0**
 
-This remediation applies to the whole MRCIP programme, including Stage 13.
+A final post-export cleanup sanity check again found no anonymous MRCIP table exposure and no dangerous authenticated table grants. The earlier comprehensive 86-table audit remains the programme-wide ACL source of truth.
 
-## 7. Security advisor status
+## 7. Advisor status
 
-The post-remediation security advisor shows no new MRCIP Stage 13 warning. The remaining warnings are pre-existing platform/Auth items and are intentionally tracked separately:
+The final security-advisor rerun reports only the same pre-existing platform/Auth findings:
 
-1. `public.can_access_portal(...)` is an authenticated-callable `SECURITY DEFINER` function.
-2. `public.complete_organisation_onboarding(...)` is an authenticated-callable `SECURITY DEFINER` function.
-3. `public.get_my_access()` is an authenticated-callable `SECURITY DEFINER` function.
-4. Supabase leaked-password protection is disabled.
+1. `public.can_access_portal(...)` — authenticated-callable `SECURITY DEFINER`;
+2. `public.complete_organisation_onboarding(...)` — authenticated-callable `SECURITY DEFINER`;
+3. `public.get_my_access()` — authenticated-callable `SECURITY DEFINER`;
+4. Supabase leaked-password protection disabled.
 
-The Auth RPCs are not altered during unrelated MRCIP stages because they require dedicated login/protected-route regression testing.
+These findings pre-date Stage 13 and remain separated from MRCIP feature work because Auth changes require dedicated login/protected-route regression.
 
-## 8. Performance advisor status
+The performance advisor reports mainly unused-index informational findings on the low/empty-data implementation plus the pre-existing duplicate `organisation_memberships` index warning. No new Stage 13 provenance-related missing-FK-index defect was introduced.
 
-No missing-FK-index regression was identified for Stage 13. The performance advisor currently reports mainly unused-index informational findings, expected on a low/empty-data implementation, plus the pre-existing duplicate `organisation_memberships` index warning.
+## 8. Regression / residue boundary
 
-No index is removed merely because it is currently unused; production workload evidence is required before pruning.
+Verified boundaries include:
 
-## 9. Regression / residue boundary
+- all nine Stage 13 migration source files are byte-identical to hosted migration bodies;
+- no temporary provenance RPC remains;
+- the temporary exporter is decommissioned;
+- no Stage 11–13 AI/provider/evaluation/rate/budget/onboarding test residue was introduced by reconciliation;
+- no accidental production-provider activation occurred;
+- Stage 3 matching, Stage 4 disclosure protection, Stage 5–6 commission controls, Stage 7 evidence lineage, Stage 8 CRM/DNC, Stage 9 scoring, Stage 10 retrieval/reporting and Stage 11–12 AI governance remain unchanged;
+- quotation/invoice/VAT, Finance, Payments, Freight, Negotiation, logistics and Auth calculation/access logic were not modified.
 
-The current retrospective audit verified:
+The repository still lacks the complete Admin frontend source, so browser/UI regression and full end-to-end Admin-page sign-off remain outside this audit.
 
-- no Stage 11–13 AI provider, request, execution, evaluation, rate, budget or onboarding fixture residue;
-- no accidental production-provider activation;
-- all public constraints validated;
-- MRCIP anonymous table exposure eliminated;
-- service-only gateway RPC boundaries intact;
-- generated database types include the Stage 13 schema/RPC surface.
-
-The repository does not contain the complete Admin frontend application, so this audit does **not** claim browser/UI regression or end-to-end Admin-page sign-off.
-
-## 10. Requirement status matrix
+## 9. Requirement status matrix
 
 | Requirement | Status | Evidence / location | Issue | Action |
 | --- | --- | --- | --- | --- |
 | Evaluation suite/case foundation | LIVE | Hosted schema; 13a | None found | Retain |
-| Evaluation run/attempt/result workflow | LIVE | Hosted functions; 13c authority | GitHub 13c SQL absent | Restore exact hosted source only |
-| Provider commercial rates | LIVE FOUNDATION | Hosted schema; 13b/13d | No active production rows | Configure only after approval |
-| Budget controls | LIVE FOUNDATION | Hosted schema; 13b/13d | No active production rows | Configure only after approval |
-| Production provider onboarding | LIVE FOUNDATION | Hosted schema/RPCs | No active provider; intentional | Preserve gated activation |
+| Evaluation run/attempt/result workflow | LIVE | 13c + hosted functions | None | Retain exact source |
+| Provider commercial rates | LIVE FOUNDATION | 13b/13d | Production rates unconfigured | Configure only after approval |
+| Budget controls | LIVE FOUNDATION | 13b/13d | Production budgets unconfigured | Configure only after approval |
+| Production provider onboarding | LIVE GATE / PROVIDER DISABLED | 13b/13d/13f | No active provider; intentional | Preserve fail-closed activation gate |
 | RLS/read models | LIVE | 13e migrations | None found | Retain |
 | Refusal/revocation hardening | LIVE | 13f | None found | Retain |
 | Evaluation gateway payload hardening | LIVE | 13g | None found | Retain |
 | Gateway RPC service grants | LIVE | 13h | None found | Retain |
-| Programme ACL least privilege | REMEDIATED / VERIFIED | 20260823081757 | 19-table legacy ACL defect found | Fixed; regression rule added |
-| Type generation | VERIFIED | Live project type generation | App type file not present in partial frontend source | Do not invent missing app source |
-| Full frontend/UI | NOT VERIFIED | Full Admin source unavailable | Cannot truthfully test browser flows | Verify when complete frontend is connected |
-| Migration provenance | **PARTIAL** | Hosted history + GitHub | 13c/13d files absent | Exact source recovery required |
+| Programme ACL least privilege | REMEDIATED / VERIFIED | 20260823081757 | Legacy defect fixed | Keep regression rule |
+| Type generation | VERIFIED | Live project type generation | Full frontend type integration pending | Wire when complete app source is restored |
+| Full frontend/UI | NOT VERIFIED | Complete Admin source unavailable | Cannot truthfully test browser flows | Verify when source is connected |
+| Migration provenance | **VERIFIED** | Hosted history ↔ GitHub | None | Preserve exact-hash reconciliation rule |
 
-## 11. Sign-off decision
+## 10. Sign-off decision
 
 **Database implementation:** PASS  
-**RLS/ACL/security boundary:** PASS after remediation  
+**RLS/ACL/security boundary:** PASS  
 **Gateway service boundary:** PASS  
 **Provider activation safety:** PASS — disabled/unconfigured  
 **Type generation:** PASS  
-**Source-control migration provenance:** **OPEN — 13c/13d missing**  
+**Source-control migration provenance:** PASS — **9/9 Stage 13 migrations exact**  
 **Full frontend/UI regression:** NOT TESTABLE from current repository
 
 ### Overall Stage 13 status
 
-**CONDITIONAL SIGN-OFF — LIVE DATABASE/RUNTIME COMPLETE; SOURCE-CONTROL PROVENANCE REMEDIATION OPEN.**
+**SIGNED OFF — DATABASE / SECURITY / SOURCE-CONTROL PROVENANCE COMPLETE; PRODUCTION PROVIDER REMAINS DISABLED.**
 
-Stage 14 must not be treated as formally started until the Stage 13 migration provenance exception is closed or explicitly accepted as a documented governance exception by an authorised maintainer. The preferred outcome remains exact recovery of the two missing migration files.
+The Stage 13 provenance gate is closed. The programme may proceed to the next controlled implementation stage while retaining the established sequence:
+
+**IMPLEMENT → TEST → AUDIT → REMEDIATE → SIGN OFF → PROCEED**.
